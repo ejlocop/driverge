@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:driverge/bloc/drawer_event.dart';
-import 'package:driverge/bloc/nav_drawer_bloc.dart';
-import 'package:driverge/bloc/nav_drawer_state.dart';
+import 'package:driverge/bloc/drawer/drawer_event.dart';
+import 'package:driverge/bloc/drawer/nav_drawer_bloc.dart';
+import 'package:driverge/bloc/drawer/nav_drawer_state.dart';
 
 class NavDrawerWidget extends StatelessWidget {
 	final List<_NavigationItem> _listItems = [

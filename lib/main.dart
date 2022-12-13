@@ -1,6 +1,5 @@
-import 'package:driverge/bloc/nav_drawer_bloc.dart';
-import 'package:driverge/bloc/nav_drawer_state.dart';
-import 'package:driverge/drawer.dart';
+import 'package:driverge/bloc/drawer/nav_drawer_bloc.dart';
+import 'package:driverge/bloc/drawer/nav_drawer_state.dart';
 import 'package:driverge/drawer_widget.dart';
 import 'package:driverge/pages/contacts.dart';
 import 'package:driverge/pages/home.dart';
@@ -40,7 +39,6 @@ class MyHomePageState extends State<MyHomePage> {
 	void initState() {
 		super.initState();
 		_bloc = NavDrawerBloc();
-		print('initState: ${_bloc.state.selectedItem}');
 		_content = _getContentForState(_bloc.state.selectedItem);
 	}
 
@@ -69,7 +67,7 @@ class MyHomePageState extends State<MyHomePage> {
 					body: AnimatedSwitcher(
 						switchInCurve: Curves.easeInExpo,
 						switchOutCurve: Curves.easeOutExpo,
-						duration: const Duration(milliseconds: 300),
+						duration: const Duration(seconds: 1),
 						child: _content,
 					),
 				),
