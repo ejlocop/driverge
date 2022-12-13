@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:driverge/bloc/drawer/drawer_event.dart';
-import 'package:driverge/bloc/drawer/nav_drawer_bloc.dart';
-import 'package:driverge/bloc/drawer/nav_drawer_state.dart';
+import 'package:driverge/blocs/drawer/drawer_event.dart';
+import 'package:driverge/blocs/drawer/nav_drawer_bloc.dart';
+import 'package:driverge/blocs/drawer/nav_drawer_state.dart';
 
 class NavDrawerWidget extends StatelessWidget {
+	NavDrawerWidget({super.key});
+
 	final List<_NavigationItem> _listItems = [
 		_NavigationItem(NavItem.homePage, "Home", Icons.home),
 		_NavigationItem(NavItem.contactsPage, "Contacts", Icons.contact_phone),
@@ -58,7 +60,6 @@ class NavDrawerWidget extends StatelessWidget {
 	);
 
 	void _handleItemClick(BuildContext context, NavItem item) {
-    print(BlocProvider.of<NavDrawerBloc>(context));
 		BlocProvider.of<NavDrawerBloc>(context).add(NavigateTo(item));
 		Navigator.pop(context);
 	}

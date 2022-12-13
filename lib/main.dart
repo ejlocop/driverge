@@ -1,5 +1,5 @@
-import 'package:driverge/bloc/drawer/nav_drawer_bloc.dart';
-import 'package:driverge/bloc/drawer/nav_drawer_state.dart';
+import 'package:driverge/blocs/drawer/nav_drawer_bloc.dart';
+import 'package:driverge/blocs/drawer/nav_drawer_state.dart';
 import 'package:driverge/drawer_widget.dart';
 import 'package:driverge/pages/contacts.dart';
 import 'package:driverge/pages/home.dart';
@@ -8,9 +8,10 @@ import 'package:driverge/pages/messages.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-void main() => runApp(MyApp());
+void main() => runApp(const MyApp());
 
 class MyApp extends StatelessWidget {
+	const MyApp({super.key});
 
 	@override
 	Widget build(BuildContext context) {
@@ -21,12 +22,14 @@ class MyApp extends StatelessWidget {
 				primarySwatch: Colors.indigo, 
 				scaffoldBackgroundColor: Colors.white
 			),
-			home: MyHomePage(),
+			home: const MyHomePage(),
 		);
 	}
 }
 
 class MyHomePage extends StatefulWidget {
+	const MyHomePage({super.key});
+
 	@override
 	MyHomePageState createState() => MyHomePageState();
 }
@@ -61,13 +64,13 @@ class MyHomePageState extends State<MyHomePage> {
 					drawer: NavDrawerWidget(),
 					appBar: AppBar(
 						title: Text(_getAppbarTitle(state.selectedItem)),
-						centerTitle: false,
+						centerTitle: true,
 						backgroundColor: Colors.indigo,
 					),
 					body: AnimatedSwitcher(
 						switchInCurve: Curves.easeInExpo,
 						switchOutCurve: Curves.easeOutExpo,
-						duration: const Duration(seconds: 1),
+						duration: const Duration(milliseconds: 500),
 						child: _content,
 					),
 				),
