@@ -37,6 +37,8 @@ dependencies:
   flutter_switch: ^0.3.2
   permission_handler: ^10.2.0
   shared_preferences: ^2.0.15
+  sqflite: ^2.2.2
+  telephony: ^0.2.0
 
 dev_dependencies:
   flutter_test:

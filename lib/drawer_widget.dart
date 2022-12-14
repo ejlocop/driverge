@@ -1,8 +1,7 @@
+import 'package:driverge/blocs/bloc/app_bloc.dart';
+import 'package:driverge/models/nav.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:driverge/blocs/drawer/drawer_event.dart';
-import 'package:driverge/blocs/drawer/nav_drawer_bloc.dart';
-import 'package:driverge/blocs/drawer/nav_drawer_state.dart';
 
 class NavDrawerWidget extends StatelessWidget {
 	NavDrawerWidget({super.key});
@@ -22,17 +21,17 @@ class NavDrawerWidget extends StatelessWidget {
 				padding: EdgeInsets.zero,
 				itemCount: _listItems.length,
 				itemBuilder: (BuildContext context, int index) {
-					return BlocBuilder<NavDrawerBloc, NavDrawerState>(
-						builder: (BuildContext context, NavDrawerState state) => _buildItem(_listItems[index], state),
+					return BlocBuilder<AppBloc, AppState>(
+						builder: (BuildContext context, AppState state) => _buildItem(_listItems[index], state),
 					);
 				}
 			),
 		)
 	);
 
-	Widget _buildItem(_NavigationItem data, NavDrawerState state) => _makeListItem(data, state);
+	Widget _buildItem(_NavigationItem data, AppState state) => _makeListItem(data, state);
 
-	Widget _makeListItem(_NavigationItem data, NavDrawerState state) => Card(
+	Widget _makeListItem(_NavigationItem data, AppState state) => Card(
 		shape: const ContinuousRectangleBorder(
 			borderRadius: BorderRadius.zero
 		),
@@ -60,7 +59,7 @@ class NavDrawerWidget extends StatelessWidget {
 	);
 
 	void _handleItemClick(BuildContext context, NavItem item) {
-		BlocProvider.of<NavDrawerBloc>(context).add(NavigateTo(item));
+		BlocProvider.of<AppBloc>(context).add(NavigateTo(item));
 		Navigator.pop(context);
 	}
 }

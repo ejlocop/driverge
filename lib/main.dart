@@ -1,6 +1,6 @@
-import 'package:driverge/blocs/drawer/nav_drawer_bloc.dart';
-import 'package:driverge/blocs/drawer/nav_drawer_state.dart';
+import 'package:driverge/blocs/bloc/app_bloc.dart';
 import 'package:driverge/drawer_widget.dart';
+import 'package:driverge/models/nav.dart';
 import 'package:driverge/pages/contacts.dart';
 import 'package:driverge/pages/home.dart';
 import 'package:driverge/pages/logs.dart';
@@ -19,8 +19,8 @@ class MyApp extends StatelessWidget {
 			title: 'Driverge',
 			debugShowCheckedModeBanner: false,
 			theme: ThemeData(
-				primarySwatch: Colors.indigo, 
-				scaffoldBackgroundColor: Colors.white
+				primarySwatch: Colors.indigo,
+				scaffoldBackgroundColor: Colors.white,
 			),
 			home: const MyHomePage(),
 		);
@@ -35,13 +35,13 @@ class MyHomePage extends StatefulWidget {
 }
 
 class MyHomePageState extends State<MyHomePage> {
-	late NavDrawerBloc _bloc;
+	late AppBloc _bloc;
 	late Widget _content;
 
 	@override
 	void initState() {
 		super.initState();
-		_bloc = NavDrawerBloc();
+		_bloc = AppBloc();
 		_content = _getContentForState(_bloc.state.selectedItem);
 	}
 
@@ -51,30 +51,32 @@ class MyHomePageState extends State<MyHomePage> {
 	}
 
 	@override
-	Widget build(BuildContext context) => BlocProvider<NavDrawerBloc>(
+	Widget build(BuildContext context) => BlocProvider<AppBloc>(
 		create: (BuildContext context) => _bloc,
-		child: BlocListener<NavDrawerBloc, NavDrawerState>(
-			listener: (BuildContext context, NavDrawerState state) {
+		child: BlocListener<AppBloc, AppState>(
+			listener: (BuildContext context, AppState state) {
 				setState(() {
 					_content = _getContentForState(state.selectedItem);
 				});
 			},
-			child: BlocBuilder<NavDrawerBloc, NavDrawerState>(
-				builder: (BuildContext context, NavDrawerState state) => Scaffold(
-					drawer: NavDrawerWidget(),
-					appBar: AppBar(
-						title: Text(_getAppbarTitle(state.selectedItem)),
-						centerTitle: true,
-						backgroundColor: Colors.indigo,
+			child: Scaffold(
+				drawer: NavDrawerWidget(),
+				appBar: AppBar(
+					title: BlocBuilder<AppBloc, AppState>(
+						builder: (context, state) {
+							return Text(_getAppbarTitle(state.selectedItem));
+						},
 					),
-					body: AnimatedSwitcher(
-						switchInCurve: Curves.easeInExpo,
-						switchOutCurve: Curves.easeOutExpo,
-						duration: const Duration(milliseconds: 500),
-						child: _content,
-					),
+					centerTitle: true,
+					backgroundColor: Colors.indigo,
 				),
-			),
+				body: AnimatedSwitcher(
+					switchInCurve: Curves.easeInExpo,
+					switchOutCurve: Curves.easeOutExpo,
+					duration: const Duration(milliseconds: 500),
+					child: _content,
+				),
+			)
 		)
 	);
 

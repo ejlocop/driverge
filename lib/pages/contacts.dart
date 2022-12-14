@@ -1,7 +1,9 @@
-import 'dart:convert';
-
+import 'package:driverge/blocs/bloc/app_bloc.dart';
+import 'package:driverge/common_widgets/contacts_list_builder.dart';
+import 'package:driverge/models/contact.dart';
+import 'package:driverge/services/database.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class ContactsPage extends StatefulWidget {
 	const ContactsPage({super.key});
@@ -13,64 +15,119 @@ class ContactsPage extends StatefulWidget {
 class ContactsPageState extends State<ContactsPage> {
 	final _nameController = TextEditingController();
 	final _numberController = TextEditingController();
-	late final SharedPreferences prefs;
+	final _formKey = GlobalKey<FormState>();
+	final DatabaseService _databaseService = DatabaseService();
 
 	@override
-	void initState() async {
+	void initState() {
 		super.initState();
-		prefs = await SharedPreferences.getInstance();
 	}
 
 	@override
 	void dispose() {
 		_nameController.dispose();
 		_numberController.dispose();
-		
 		super.dispose();
+	}
+
+	Future<List<Contact>> _getContacts() async {
+		return await _databaseService.contacts();
+	}
+
+	Future _addContactToDB(Contact contact) async {
+		await _databaseService.inserContact(contact);
+	}
+
+  Future _deleteContact(Contact contact) async {
+    await _databaseService.deleteContact(contact.id!);
+  }
+
+  Future _editContact(Contact contact) async {
+
 	}
 
 	@override
 	Widget build(BuildContext context) {
-		return Scaffold(
-
+		return Column(
+			children: <Widget>[
+				_buildForm(),
+				const Divider(height: 20),
+				Expanded(
+					child: ContactsListBuilder(
+						future: _getContacts(),
+						showDelete: true,
+						showEdit: true,
+						onDelete: _deleteContact,
+						onEdit: _editContact,
+					)
+				)
+			],
 		);
 	}
 
-	Future<List<Contact>> _fetchContacts(SharedPreferences prefs) async {
-		final String? contactsString = await prefs.getString('contacts');
-		final List<Contact> contacts = Contact.decode(contactsString ?? '');
-		return contacts;
-	}
-}
+	Widget _buildForm() {
+		return Form(
+			key: _formKey,
+			child: Column(
+				children: <Widget>[
+					Container(
+						padding: const EdgeInsets.all(16),
+						child: Column(children: [
+							TextFormField(
+								// enabled: _contacts.length >= 5,
+								controller: _nameController,
+								decoration: const InputDecoration(hintText: 'Name'),
+								keyboardType: TextInputType.name,
+								validator: (value) {
+									return (value == null || value.isEmpty)
+											? 'Please enter a name'
+											: null;
+								},
+							),
+							TextFormField(
+								// enabled: _contacts.length >= 5,
+								controller: _numberController,
+								decoration: const InputDecoration(hintText: 'Phone Number'),
+								keyboardType: TextInputType.phone,
+								validator: (value) {
+									return (value == null || value.isEmpty)
+											? 'Please enter a number'
+											: null;
+								},
+							),
+							const SizedBox(height: 20),
+							BlocBuilder<AppBloc, AppState>(
+								builder: (context, state) {
+									return ElevatedButton(
+										onPressed: () {
+											if (_formKey.currentState!.validate()) {
+												ScaffoldMessenger.of(context).showSnackBar(
+												const SnackBar(content: Text('Contact Added')));
 
-class Contact {
-	final int id;
-	final String name;
-	final String number;
+												final Contact newContact = Contact(
+													id: state.contacts.length + 1,
+													name: _nameController.text,
+													phone: _numberController.text
+												);
+												
+												print('newContact: ${newContact.toMap()}');
+												_addContactToDB(newContact);
 
-	Contact({required this.id, required this.name, required this.number});
+												context.read<AppBloc>().add(AddNewContact(newContact));
 
-	factory Contact.fromJson(Map<String, dynamic> jsonData) {
-		return Contact(
-			id: jsonData['id'],
-			name: jsonData['name'],
-			number: jsonData['phone']
+												FocusScope.of(context).requestFocus(FocusNode());
+
+												// _nameController.clear();
+												// _numberController.clear();
+											}
+										},
+										child: const Text('Add emergency contact'));
+								},
+							)
+						]),
+					),
+				],
+			),
 		);
 	}
-
-	static Map<String, dynamic> toMap(Contact contact) => {
-		'id': contact.id,
-		'name': contact.name,
-		'number': contact.number
-	};
-
-	static String encode(List<Contact> contacts) => json.encode(
-		contacts
-				.map<Map<String, dynamic>>((contact) => Contact.toMap(contact))
-				.toList()
-	);
-
-	static List<Contact> decode(String contacts) => (json.decode(contacts) as List<dynamic>)
-		.map<Contact>((item) => Contact.fromJson(item))
-		.toList();
 }
