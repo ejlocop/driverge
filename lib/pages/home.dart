@@ -36,32 +36,29 @@ class HomePageState extends State<HomePage> {
 
 	@override
 	Widget build(BuildContext context) {
-		return Column(
-			mainAxisSize: MainAxisSize.min,
-			children: <Widget>[
-				Container(
-					padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 30),
-					decoration: const BoxDecoration(color: Color.fromARGB(20, 0, 0, 0)),
-					margin: const EdgeInsets.only(bottom: 60, top: 20, left: 20, right: 20),
-					child: BlocBuilder<AppBloc, AppState>(
-						builder: (context, state) {
-							return Column(
-								children: [
-									_buildBlocker(context, state),
-								],
-							);
-						}
-					),
-				),
-				const SizedBox(height: 15),
-				Expanded(
-					child: ContactsListBuilder(
-						future: _getContacts(),
-						showCall: true,
-					)
-				)
-				
-			],
+		return BlocBuilder<AppBloc, AppState>(
+			builder: (context, state) {
+				return Column(
+					mainAxisSize: MainAxisSize.min,
+					children: <Widget>[
+						Container(
+							padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 30),
+							decoration: const BoxDecoration(color: Color.fromARGB(20, 0, 0, 0)),
+							margin: const EdgeInsets.all(20),
+							child: _buildBlocker(context, state)
+						),
+						const Text("Emergency Contacts",
+							style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)
+						),
+						Expanded(
+							child: ContactsListBuilder(
+								future: state.contactsFetched ? null : _getContacts(),
+								showCall: true,
+							)
+						)
+					],
+				);
+			},
 		);
 	}
 

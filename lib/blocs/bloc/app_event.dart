@@ -19,7 +19,13 @@ class AddNewContact extends AppEvent {
 	const AddNewContact(this.contact);
 }
 
-class FetchedAllContacts extends AppEvent {
+class RemovedContact extends AppEvent {
+	final Contact contact;
+	const RemovedContact(this.contact);
+}
+
+class ContactsLoaded extends AppEvent {
 	final List<Contact> contacts;
-	const FetchedAllContacts(this.contacts);
+  bool contactsFetched = false;
+	ContactsLoaded(this.contacts, this.contactsFetched);
 }

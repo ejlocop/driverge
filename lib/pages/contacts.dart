@@ -36,29 +36,27 @@ class ContactsPageState extends State<ContactsPage> {
 
 	Future _addContactToDB(Contact contact) async {
 		await _databaseService.inserContact(contact);
+		setState(() {});
 	}
 
-  Future _deleteContact(Contact contact) async {
-    await _databaseService.deleteContact(contact.id!);
-  }
-
-  Future _editContact(Contact contact) async {
-
+	Future _deleteContact(Contact contact) async {
+		await _databaseService.deleteContact(contact.id!);
+		setState(() {});
 	}
 
 	@override
 	Widget build(BuildContext context) {
+		final bool wasContactsFetched = BlocProvider.of<AppBloc>(context).state.contactsFetched;
 		return Column(
 			children: <Widget>[
 				_buildForm(),
 				const Divider(height: 20),
 				Expanded(
 					child: ContactsListBuilder(
-						future: _getContacts(),
+						future: wasContactsFetched ? null : _getContacts(),
 						showDelete: true,
-						showEdit: true,
-						onDelete: _deleteContact,
-						onEdit: _editContact,
+						showCall: true,
+						onDelete: _deleteContact
 					)
 				)
 			],
@@ -71,7 +69,7 @@ class ContactsPageState extends State<ContactsPage> {
 			child: Column(
 				children: <Widget>[
 					Container(
-						padding: const EdgeInsets.all(16),
+						padding: const EdgeInsets.all(20),
 						child: Column(children: [
 							TextFormField(
 								// enabled: _contacts.length >= 5,
@@ -91,8 +89,8 @@ class ContactsPageState extends State<ContactsPage> {
 								keyboardType: TextInputType.phone,
 								validator: (value) {
 									return (value == null || value.isEmpty)
-											? 'Please enter a number'
-											: null;
+										? 'Please enter a number'
+										: null;
 								},
 							),
 							const SizedBox(height: 20),
@@ -101,27 +99,17 @@ class ContactsPageState extends State<ContactsPage> {
 									return ElevatedButton(
 										onPressed: () {
 											if (_formKey.currentState!.validate()) {
-												ScaffoldMessenger.of(context).showSnackBar(
-												const SnackBar(content: Text('Contact Added')));
-
 												final Contact newContact = Contact(
-													id: state.contacts.length + 1,
-													name: _nameController.text,
-													phone: _numberController.text
+														id: state.contacts.length + 1,
+														name: _nameController.text,
+														phone: _numberController.text
 												);
-												
-												print('newContact: ${newContact.toMap()}');
-												_addContactToDB(newContact);
 
-												context.read<AppBloc>().add(AddNewContact(newContact));
-
-												FocusScope.of(context).requestFocus(FocusNode());
-
-												// _nameController.clear();
-												// _numberController.clear();
+												_onContactAdded(newContact, context);
 											}
 										},
-										child: const Text('Add emergency contact'));
+										child: const Text('Add emergency contact')
+									);
 								},
 							)
 						]),
@@ -129,5 +117,19 @@ class ContactsPageState extends State<ContactsPage> {
 				],
 			),
 		);
+	}
+
+	void _onContactAdded(Contact contact, BuildContext context) {
+		ScaffoldMessenger.of(context)
+			.showSnackBar(const SnackBar(content: Text('Contact Added')));
+
+		_addContactToDB(contact);
+
+		BlocProvider.of<AppBloc>(context).add(AddNewContact(contact));
+
+		FocusScope.of(context).requestFocus(FocusNode());
+
+		_nameController.clear();
+		_numberController.clear();
 	}
 }

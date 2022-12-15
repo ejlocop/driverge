@@ -11,6 +11,8 @@ class AppBloc extends Bloc<AppEvent, AppState> {
 		on<NavigateTo>(onNavigateTo);
 		on<EnableBlockerEvent>(onEnabledBlocker);
 		on<AddNewContact>(onAddNewContact);
+		on<RemovedContact>(onRemovedContact);
+		on<ContactsLoaded>(onContactsLoaded);
 	}
 
 	void onNavigateTo(NavigateTo event, Emitter<AppState> emit) {
@@ -22,10 +24,15 @@ class AppBloc extends Bloc<AppEvent, AppState> {
 	}
 
 	void onAddNewContact(AddNewContact event, Emitter<AppState> emit) {
+		print(event.contact);
 		emit(state.copyWith(contacts: [...state.contacts, event.contact]));
 	}
 
-	void onFetchAllContacts(FetchedAllContacts event, Emitter<AppState> emit) {
-		emit(state.copyWith(contacts: event.contacts));
+	void onContactsLoaded(ContactsLoaded event, Emitter<AppState> emit) {
+		emit(state.copyWith(contacts: event.contacts, contactsFetched: event.contactsFetched));
+	}
+
+	void onRemovedContact(RemovedContact event, Emitter<AppState> emit) {
+		emit(state.copyWith(contacts: state.contacts.where((contact) => contact.id != event.contact.id).toList()));
 	}
 }

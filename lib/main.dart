@@ -82,8 +82,6 @@ class MyHomePageState extends State<MyHomePage> {
 
 	_getAppbarTitle(NavItem state) {
 		switch (state) {
-			case NavItem.homePage:
-				return 'Home';
 			case NavItem.contactsPage:
 				return 'Contacts';
 			case NavItem.messagesPage:
@@ -91,14 +89,12 @@ class MyHomePageState extends State<MyHomePage> {
 			case NavItem.logsPage:
 				return 'Logs';
 			default:
-				return '';
+				return 'Home';
 		}
 	}
 
 	_getContentForState(NavItem state) {
 		switch (state) {
-			case NavItem.homePage:
-				return const HomePage();
 			case NavItem.contactsPage:
 				return const ContactsPage();
 			case NavItem.messagesPage:

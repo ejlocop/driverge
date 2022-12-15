@@ -78,6 +78,8 @@ class DatabaseService {
 		// Get a reference to the database.
 		final db = await _databaseService.database;
 
+    print('Fetching contacts...');
+
 		// Query the table for all the Contacts.
 		final List<Map<String, dynamic>> contacts = await db.query('contacts');
 
