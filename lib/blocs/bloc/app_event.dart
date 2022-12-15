@@ -29,3 +29,20 @@ class ContactsLoaded extends AppEvent {
   bool contactsFetched = false;
 	ContactsLoaded(this.contacts, this.contactsFetched);
 }
+
+
+class AddNewMessage extends AppEvent {
+	final Message message;
+	const AddNewMessage(this.message);
+}
+
+class RemovedMessage extends AppEvent {
+	final Message message;
+	const RemovedMessage(this.message);
+}
+
+class MessagesLoaded extends AppEvent {
+	final List<Message> messages;
+  bool messagesFetched = false;
+	MessagesLoaded(this.messages, this.messagesFetched);
+}

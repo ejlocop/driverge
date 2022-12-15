@@ -1,5 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:driverge/models/contact.dart';
+import 'package:driverge/models/message.dart';
 import 'package:driverge/models/nav.dart';
 import 'package:equatable/equatable.dart';
 
@@ -9,10 +10,16 @@ part 'app_state.dart';
 class AppBloc extends Bloc<AppEvent, AppState> {
 	AppBloc() : super(const AppState()) {
 		on<NavigateTo>(onNavigateTo);
+    
 		on<EnableBlockerEvent>(onEnabledBlocker);
+
 		on<AddNewContact>(onAddNewContact);
 		on<RemovedContact>(onRemovedContact);
 		on<ContactsLoaded>(onContactsLoaded);
+
+		on<AddNewMessage>(onAddNewMessage);
+		on<RemovedMessage>(onRemovedMessage);
+		on<MessagesLoaded>(onMessagesLoaded);
 	}
 
 	void onNavigateTo(NavigateTo event, Emitter<AppState> emit) {
@@ -24,7 +31,6 @@ class AppBloc extends Bloc<AppEvent, AppState> {
 	}
 
 	void onAddNewContact(AddNewContact event, Emitter<AppState> emit) {
-		print(event.contact);
 		emit(state.copyWith(contacts: [...state.contacts, event.contact]));
 	}
 
@@ -34,5 +40,17 @@ class AppBloc extends Bloc<AppEvent, AppState> {
 
 	void onRemovedContact(RemovedContact event, Emitter<AppState> emit) {
 		emit(state.copyWith(contacts: state.contacts.where((contact) => contact.id != event.contact.id).toList()));
+	}
+
+	void onAddNewMessage(AddNewMessage event, Emitter<AppState> emit) {
+		emit(state.copyWith(messages: [...state.messages, event.message]));
+	}
+
+	void onMessagesLoaded(MessagesLoaded event, Emitter<AppState> emit) {
+		emit(state.copyWith(messages: event.messages, contactsFetched: event.messagesFetched));
+	}
+
+	void onRemovedMessage(RemovedMessage event, Emitter<AppState> emit) {
+		emit(state.copyWith(messages: state.messages.where((message) => message.id != event.message.id).toList()));
 	}
 }

@@ -4,11 +4,13 @@ class Log {
 	final int? id;
 	final String type;
 	final String message;
+	final String? date;
 
 	Log({
 		this.id,
 		required this.type,
 		required this.message,
+		this.date,
 	});
 
 	// Convert a Contact into a Map. The keys must correspond to the names of the
@@ -18,6 +20,7 @@ class Log {
 			'id': id,
 			'type': type,
 			'message': message,
+			'date': date
 		};
 	}
 
@@ -26,6 +29,7 @@ class Log {
 			id: map['id']?.toInt() ?? 0,
 			type: map['type'] ?? '',
 			message: map['message'] ?? '',
+			date: map['date'] ?? DateTime.now().toString(),
 		);
 	}
 
@@ -37,6 +41,12 @@ class Log {
 	// each Contact when using the print statement.
 	@override
 	String toString() {
-		return 'Contact(id: $id, name: $type, age: $message)';
+		return 'Log(id: $id, name: $type, age: $message, date: $date)';
 	}
+}
+
+enum LogContactType {
+	add,
+	delete,
+	call
 }

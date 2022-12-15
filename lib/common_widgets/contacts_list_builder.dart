@@ -1,5 +1,7 @@
 import 'package:driverge/blocs/bloc/app_bloc.dart';
 import 'package:driverge/models/contact.dart';
+import 'package:driverge/models/log.dart';
+import 'package:driverge/services/log_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:telephony/telephony.dart';
@@ -64,8 +66,9 @@ class ContactsListBuilderState extends State<ContactsListBuilder> {
 
 				return BlocListener<AppBloc, AppState>(
 					listener: (context, state) {
-						print('new State');
-						setState(() => _contacts = state.contacts);
+						if(_contacts.length != state.contacts.length) {
+							setState(() => _contacts = state.contacts);
+						}
 					},
 					child: ListView.builder(
 						itemCount: _contacts.length,
@@ -124,7 +127,10 @@ class ContactsListBuilderState extends State<ContactsListBuilder> {
 		return Visibility(
 			visible: widget.showCall ?? false,
 			child: InkWell(
-				onTap: () => _callContact(contact),
+				onTap: () {
+					_callContact(contact);
+					LogService.logContact(contact, LogContactType.call);
+				},
 				borderRadius: BorderRadius.circular(12),
 				splashColor: Colors.indigoAccent.shade200,
 				child: const Padding(
@@ -139,8 +145,10 @@ class ContactsListBuilderState extends State<ContactsListBuilder> {
 		return Visibility(
 			visible: widget.showDelete ?? false,
 			child: InkWell(
-				onTap: () {
+				onTap: () async {
 					BlocProvider.of<AppBloc>(context).add(RemovedContact(contact));
+					
+					await LogService.logContact(contact, LogContactType.delete);
 					widget.onDelete!(contact);
 				},
 				borderRadius: BorderRadius.circular(12),

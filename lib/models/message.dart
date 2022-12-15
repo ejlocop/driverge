@@ -1,14 +1,12 @@
 import 'dart:convert';
 
-class Contact {
+class Message {
 	final int? id;
-	final String name;
-	final String phone;
+	final String text;
 
-	Contact({
+	Message({
 		this.id,
-		required this.name,
-		required this.phone,
+		required this.text,
 	});
 
 	// Convert a Contact into a Map. The keys must correspond to the names of the
@@ -16,27 +14,31 @@ class Contact {
 	Map<String, dynamic> toMap() {
 		return {
 			'id': id,
-			'name': name,
-			'phone': phone,
+			'name': text,
 		};
 	}
 
-	factory Contact.fromMap(Map<String, dynamic> map) {
-		return Contact(
+	factory Message.fromMap(Map<String, dynamic> map) {
+		return Message(
 			id: map['id']?.toInt() ?? 0,
-			name: map['name'] ?? '',
-			phone: map['phone'] ?? '',
+			text: map['text'] ?? '',
 		);
 	}
 
 	String toJson() => json.encode(toMap());
 
-	factory Contact.fromJson(String source) => Contact.fromMap(json.decode(source));
+	factory Message.fromJson(String source) =>
+			Message.fromMap(json.decode(source));
 
 	// Implement toString to make it easier to see information about
 	// each Contact when using the print statement.
 	@override
 	String toString() {
-		return 'Contact(id: $id, name: $name, phone: $phone)';
+		return 'Message(id: $id, name: $text)';
 	}
+}
+
+enum LogMessageType {
+	add,
+	delete
 }

@@ -1,7 +1,9 @@
 import 'package:driverge/blocs/bloc/app_bloc.dart';
 import 'package:driverge/common_widgets/contacts_list_builder.dart';
 import 'package:driverge/models/contact.dart';
+import 'package:driverge/models/log.dart';
 import 'package:driverge/services/database.dart';
+import 'package:driverge/services/log_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -119,7 +121,7 @@ class ContactsPageState extends State<ContactsPage> {
 		);
 	}
 
-	void _onContactAdded(Contact contact, BuildContext context) {
+	void _onContactAdded(Contact contact, BuildContext context) async {
 		ScaffoldMessenger.of(context)
 			.showSnackBar(const SnackBar(content: Text('Contact Added')));
 
@@ -128,6 +130,8 @@ class ContactsPageState extends State<ContactsPage> {
 		BlocProvider.of<AppBloc>(context).add(AddNewContact(contact));
 
 		FocusScope.of(context).requestFocus(FocusNode());
+
+    await LogService.logContact(contact, LogContactType.add);
 
 		_nameController.clear();
 		_numberController.clear();

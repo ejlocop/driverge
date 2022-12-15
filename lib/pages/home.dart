@@ -1,7 +1,9 @@
 import 'package:driverge/blocs/bloc/app_bloc.dart';
 import 'package:driverge/common_widgets/contacts_list_builder.dart';
 import 'package:driverge/models/contact.dart';
+import 'package:driverge/models/log.dart';
 import 'package:driverge/services/database.dart';
+import 'package:driverge/services/log_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -43,7 +45,7 @@ class HomePageState extends State<HomePage> {
 					children: <Widget>[
 						Container(
 							padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 30),
-							decoration: const BoxDecoration(color: Color.fromARGB(20, 0, 0, 0)),
+							decoration: const BoxDecoration(color: Color.fromARGB(15, 0, 0, 0)),
 							margin: const EdgeInsets.all(20),
 							child: _buildBlocker(context, state)
 						),
@@ -126,12 +128,13 @@ class HomePageState extends State<HomePage> {
 	// Widget _buildSwitchBlocker() => ;
 
 	Future _blockIncomingCalls(bool isBlocked) async {
-		print(isBlocked);
 		try {
 			// final result = await _methodChannel.invokeMethod('setBlocking', {
 			// 	'isBlocked': isBlocked
 			// });
 			// print(result);
+			await LogService.logBlocking(isBlocked);
+
 		} on PlatformException catch (e) {
 			print("Failed to get battery level: '${e.message}'.");
 		}

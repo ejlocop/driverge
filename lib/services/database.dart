@@ -1,5 +1,6 @@
 import 'package:driverge/models/contact.dart';
 import 'package:driverge/models/log.dart';
+import 'package:driverge/models/message.dart';
 // ignore: depend_on_referenced_packages
 import 'package:path/path.dart' as path;
 import 'package:sqflite/sqflite.dart';
@@ -21,13 +22,8 @@ class DatabaseService {
 	Future<Database> _initDatabase() async {
 		final databasePath = await getDatabasesPath();
 
-		// Set the path to the database. Note: Using the `join` function from the
-		// `path` package is best practice to ensure the path is correctly
-		// constructed for each platform.
 		final dbpath = path.join(databasePath, 'driverge_db.db');
 
-		// Set the version. This executes the onCreate function and provides a
-		// path to perform database upgrades and downgrades.
 		return await openDatabase(
 			dbpath,
 			onCreate: _onCreate,
@@ -36,8 +32,6 @@ class DatabaseService {
 		);
 	}
 
-	// When the database is first created, create a table to store Contacts
-	// and a table to store dogs.
 	Future<void> _onCreate(Database db, int version) async {
 		// Run the CREATE {contacts} TABLE statement on the database.
 		await db.execute(
@@ -45,21 +39,29 @@ class DatabaseService {
 		);
 		// Run the CREATE {logs} TABLE statement on the database.
 		await db.execute(
-			'CREATE TABLE logs(id INTEGER PRIMARY KEY, type TEXT, message TEXT)',
+			'CREATE TABLE logs(id INTEGER PRIMARY KEY, type TEXT, message TEXT, date TEXT DEFAULT (datetime(\'now\', \'localtime\')))',
+		);
+
+		// Run the CREATE {logs} TABLE statement on the database.
+		await db.execute(
+			'CREATE TABLE messages(id INTEGER PRIMARY KEY, text TEXT)',
 		);
 	}
 
-	// Define a function that inserts Contacts into the database
 	Future<void> inserContact(Contact contact) async {
 		final db = await _databaseService.database;
-
-		// Insert the Contact into the correct table. You might also specify the
-		// `conflictAlgorithm` to use in case the same Contact is inserted twice.
-		//
-		// In this case, replace any previous data.
 		await db.insert(
 			'contacts',
 			contact.toMap(),
+			conflictAlgorithm: ConflictAlgorithm.replace,
+		);
+	}
+
+	Future<void> inserMessage(Message message) async {
+		final db = await _databaseService.database;
+		await db.insert(
+			'messages',
+			message.toMap(),
 			conflictAlgorithm: ConflictAlgorithm.replace,
 		);
 	}
@@ -73,12 +75,9 @@ class DatabaseService {
 		);
 	}
 
-	// A method that retrieves all the Contacts from the Contacts table.
 	Future<List<Contact>> contacts() async {
 		// Get a reference to the database.
 		final db = await _databaseService.database;
-
-    print('Fetching contacts...');
 
 		// Query the table for all the Contacts.
 		final List<Map<String, dynamic>> contacts = await db.query('contacts');
@@ -87,63 +86,65 @@ class DatabaseService {
 		return List.generate(contacts.length, (index) => Contact.fromMap(contacts[index]));
 	}
 
-	Future<Contact> contact(int id) async {
+	Future<List<Message>> messages() async {
+		
 		final db = await _databaseService.database;
-		final List<Map<String, dynamic>> maps = await db.query('contacts', where: 'id = ?', whereArgs: [id]);
-		return Contact.fromMap(maps[0]);
+		
+		final List<Map<String, dynamic>> messages = await db.query('messages');
+		
+		return List.generate(messages.length, (index) => Message.fromMap(messages[index]));
 	}
 
 	Future<List<Log>> logs() async {
 		final db = await _databaseService.database;
 		final List<Map<String, dynamic>> logs = await db.query('logs');
-		return List.generate(logs.length, (index) => Log.fromMap(logs[index]));
-	}
-
-	// A method that updates a Contact data from the Contacts table.
-	Future<void> updateContact(Contact contact) async {
-		// Get a reference to the database.
-		final db = await _databaseService.database;
-
-		// Update the given Contact
-		await db.update(
-			'contacts',
-			contact.toMap(),
-			// Ensure that the Contact has a matching id.
-			where: 'id = ?',
-			// Pass the Contact's id as a whereArg to prevent SQL injection.
-			whereArgs: [contact.id],
-		);
+		return List.generate(logs.length, (index) => Log.fromMap(logs[index])).reversed.toList();
 	}
 
 	// A method that deletes a Contact data from the Contacts table.
 	Future<void> deleteContact(int id) async {
-		// Get a reference to the database.
 		final db = await _databaseService.database;
 
-		// Remove the {Contact} from the database.
 		await db.delete(
 			'contacts',
-			// Use a `where` clause to delete a specific Contact.
 			where: 'id = ?',
-			// Pass the Contact's id as a whereArg to prevent SQL injection.
 			whereArgs: [id],
 		);
 	}
 
-  Future<void> deleteContacts() async {
-    final db = await _databaseService.database;
+	// A method that deletes a Contact data from the Contacts table.
+	Future<void> deleteMessage(int id) async {
+		final db = await _databaseService.database;
 
-    await db.delete('contacts');
-  }
+		// Remove the {Contact} from the database.
+		await db.delete(
+			'messages',
+			where: 'id = ?',
+			whereArgs: [id],
+		);
+	}
 
-  Future<void> deleteLogs() async {
-    final db = await _databaseService.database;
+	Future<void> deleteContacts() async {
+		final db = await _databaseService.database;
 
-    await db.delete('logs');
-  }
+		await db.delete('contacts');
+	}
+	
+	Future<void> deleteMessages() async {
+		final db = await _databaseService.database;
 
-  Future<void> cleanDatabase() async {
-    deleteContacts();
-    deleteLogs();
-  }
+		await db.delete('messages');
+	}
+
+	Future<void> deleteLogs() async {
+		final db = await _databaseService.database;
+
+		await db.delete('logs');
+	}
+
+	Future<void> cleanDatabase() async {
+		deleteContacts();
+		deleteLogs();
+		deleteMessages();
+	}
 }
