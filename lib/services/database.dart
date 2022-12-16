@@ -46,6 +46,21 @@ class DatabaseService {
 		await db.execute(
 			'CREATE TABLE messages(id INTEGER PRIMARY KEY, text TEXT)',
 		);
+
+		_seedMessages();
+	}
+
+	void _seedMessages() async {
+		List<Message> messages = [
+			Message(id: 1, text: 'I will respond to your message when I come back'),
+			Message(id: 2, text: 'I\'m currently driving'),
+			Message(id: 3, text: 'I\'m driving, safety first!'),
+			Message(id: 4, text: 'Text me later, I am in charge of the wheels today'),
+		];
+		
+		for (Message message in messages) {
+			await inserMessage(message);
+		}
 	}
 
 	Future<void> inserContact(Contact contact) async {

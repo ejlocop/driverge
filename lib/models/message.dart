@@ -14,7 +14,7 @@ class Message {
 	Map<String, dynamic> toMap() {
 		return {
 			'id': id,
-			'name': text,
+			'text': text,
 		};
 	}
 
@@ -34,7 +34,7 @@ class Message {
 	// each Contact when using the print statement.
 	@override
 	String toString() {
-		return 'Message(id: $id, name: $text)';
+		return 'Message(id: $id, text: $text)';
 	}
 }
 

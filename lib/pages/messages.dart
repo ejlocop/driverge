@@ -1,4 +1,5 @@
 import 'package:driverge/blocs/bloc/app_bloc.dart';
+import 'package:driverge/models/log.dart';
 import 'package:driverge/models/message.dart';
 import 'package:driverge/services/database.dart';
 import 'package:driverge/services/log_service.dart';
@@ -16,6 +17,7 @@ class MessagesPageState extends State<MessagesPage> {
 	final _textController = TextEditingController();
 	final _formKey = GlobalKey<FormState>();
 	final DatabaseService _databaseService = DatabaseService();
+	List<Message> _messages = [];
 
 	@override
 	void initState() {
@@ -44,20 +46,65 @@ class MessagesPageState extends State<MessagesPage> {
 
 	@override
 	Widget build(BuildContext context) {
-		final bool wasMessagesFetched = BlocProvider.of<AppBloc>(context).state.messagesFetched;
-		
 		return Column(
 			children: <Widget>[
 				_buildForm(),
 				const Divider(height: 20),
-				// Expanded(
-					// child: MessagesListBuilder(
-					// 	future: _getMessages(),
-					// 	showDelete: true,
-					// 	onDelete: _deleteMessage
-					// )
-				// )
-			]
+				Expanded(
+					child: FutureBuilder<List<Message>>(
+						future: _getMessages(),
+						builder: (context, snapshot) {
+							if (snapshot.connectionState == ConnectionState.waiting) {
+								return const Center(
+									child: CircularProgressIndicator(),
+								);
+							}
+
+							if (snapshot.hasError) {
+								return Center(
+									child: Text('Error: ${snapshot.error}'),
+								);
+							}
+
+							_messages = snapshot.data!;
+							// print(_messages.length);
+
+							BlocProvider.of<AppBloc>(context)
+									.add(MessagesLoaded(_messages, true));
+
+							if (_messages.isEmpty) {
+								return const Center(
+									child: Text('No messages found'),
+								);
+							}
+
+							return ListView.builder(
+								itemCount: _messages.length,
+								itemBuilder: (context, index) => _buildMessageCard(_messages[index], context)
+							);
+						}
+					)
+				)
+			]	
+		);
+	}
+
+	Widget _buildMessageCard(Message message, BuildContext context) {
+		return Card(
+			elevation: 2,,
+			child: ListTile(
+				title: Text(message.text),
+				trailing: IconButton(
+					icon: const Icon(Icons.delete, color: Colors.red),
+					onPressed: () async {
+						BlocProvider.of<AppBloc>(context).add(RemovedMessage(message));
+
+						await LogService.logMessage(message, LogMessageType.delete);
+
+						_deleteMessage(message);
+					},
+				),
+			),
 		);
 	}
 
@@ -67,52 +114,49 @@ class MessagesPageState extends State<MessagesPage> {
 			child: Column(
 				children: <Widget> [
 					Padding(
-						padding: const EdgeInsets.symmetric(horizontal: 20), 
+						padding: const EdgeInsets.symmetric(horizontal: 20),
 						child: TextFormField(
+							// enabled: isFormEnabled,
 							controller: _textController,
 							decoration: const InputDecoration(hintText: 'Text'),
 							keyboardType: TextInputType.text,
 							validator: (value) {
 								return (value == null || value.isEmpty)
-										? 'Please enter a text'
+										? 'Please enter a message'
 										: null;
 							},
 						),
 					),
 					const SizedBox(height: 20),
-					BlocBuilder<AppBloc, AppState>(
-						builder: (context, state) {
-							return ElevatedButton(
-								onPressed: () {
-									if (_formKey.currentState!.validate()) {
-										final message = Message(
-											id: state.contacts.length + 1,
-											text: _textController.text,
-										);
+					ElevatedButton(
+						onPressed: () {
+							if (_formKey.currentState!.validate()) {
+								final message = Message(
+									id: _messages.length + 1,
+									text: _textController.text,
+								);
 
-										_onMessageAdded(message, context);
-									}
-								},
-								child: const Text('Add emergency contact')
-							);
+								_onMessageAdded(message, context);
+							}
 						},
-					)
+						child: const Text('Add automated response text')
+					),
 				]
-			),
+			)
 		);
 	}
 
 	void _onMessageAdded(Message message, BuildContext context) async {
 		ScaffoldMessenger.of(context)
-			.showSnackBar(const SnackBar(content: Text('Message Added')));
-			
+				.showSnackBar(const SnackBar(content: Text('Message Added')));
+
 		_addMessage(message);
 
 		BlocProvider.of<AppBloc>(context).add(AddNewMessage(message));
 
 		FocusScope.of(context).requestFocus(FocusNode());
 
-    await LogService.logMessage(message, LogMessageType.add);
+		await LogService.logMessage(message, LogMessageType.add);
 
 		_textController.clear();
 	}

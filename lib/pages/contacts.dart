@@ -36,7 +36,7 @@ class ContactsPageState extends State<ContactsPage> {
 		return await _databaseService.contacts();
 	}
 
-	Future _addContactToDB(Contact contact) async {
+	Future _addContact(Contact contact) async {
 		await _databaseService.inserContact(contact);
 		setState(() {});
 	}
@@ -125,7 +125,7 @@ class ContactsPageState extends State<ContactsPage> {
 		ScaffoldMessenger.of(context)
 			.showSnackBar(const SnackBar(content: Text('Contact Added')));
 
-		_addContactToDB(contact);
+		_addContact(contact);
 
 		BlocProvider.of<AppBloc>(context).add(AddNewContact(contact));
 
