@@ -30,6 +30,7 @@ environment:
 # versions available, run `flutter pub outdated`.
 dependencies:
   bloc: ^8.1.0
+  custom_radio_grouped_button: ^2.1.2+2
   equatable: ^2.0.5
   flutter:
     sdk: flutter

@@ -37,14 +37,15 @@ class DatabaseService {
 		await db.execute(
 			'CREATE TABLE contacts(id INTEGER PRIMARY KEY, name TEXT, phone TEXT)',
 		);
+    
 		// Run the CREATE {logs} TABLE statement on the database.
 		await db.execute(
 			'CREATE TABLE logs(id INTEGER PRIMARY KEY, type TEXT, message TEXT, date TEXT DEFAULT (datetime(\'now\', \'localtime\')))',
 		);
 
-		// Run the CREATE {logs} TABLE statement on the database.
+		// Run the CREATE {messages} TABLE statement on the database.
 		await db.execute(
-			'CREATE TABLE messages(id INTEGER PRIMARY KEY, text TEXT)',
+			'CREATE TABLE messages(id INTEGER PRIMARY KEY, text TEXT, selected INTEGER DEFAULT 0)',
 		);
 
 		_seedMessages();
@@ -94,6 +95,8 @@ class DatabaseService {
 		// Get a reference to the database.
 		final db = await _databaseService.database;
 
+    print('fetching contacts');
+
 		// Query the table for all the Contacts.
 		final List<Map<String, dynamic>> contacts = await db.query('contacts');
 
@@ -104,6 +107,8 @@ class DatabaseService {
 	Future<List<Message>> messages() async {
 		
 		final db = await _databaseService.database;
+
+    print('fetching messages');
 		
 		final List<Map<String, dynamic>> messages = await db.query('messages');
 		

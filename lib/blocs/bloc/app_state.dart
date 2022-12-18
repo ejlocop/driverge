@@ -8,6 +8,7 @@ class AppState extends Equatable {
 	final bool contactsFetched;
 	final List<Message> messages;
 	final bool messagesFetched;
+	final int selectedMessageId;
 	
 	const AppState({
 		this.isBlocked = false,
@@ -16,6 +17,7 @@ class AppState extends Equatable {
 		this.contactsFetched = false,
 		this.messages = const [],
 		this.messagesFetched = false,
+		this.selectedMessageId = -1,
 	});
 	
 	@override
@@ -26,6 +28,7 @@ class AppState extends Equatable {
 		contactsFetched,
 		messages,
 		messagesFetched,
+		selectedMessageId,
 	];
 
 	AppState copyWith({
@@ -35,6 +38,7 @@ class AppState extends Equatable {
 		bool? contactsFetched,
 		List<Message>? messages,
 		bool? messagesFetched,
+		int? selectedMessageId
 	}) {
 		return AppState(
 			isBlocked: isBlocked ?? this.isBlocked,
@@ -42,7 +46,8 @@ class AppState extends Equatable {
 			contacts: contacts ?? this.contacts,
 			contactsFetched: contactsFetched ?? this.contactsFetched,
 			messages: messages ?? this.messages,
-			messagesFetched: messagesFetched ?? this.messagesFetched
+			messagesFetched: messagesFetched ?? this.messagesFetched,
+			selectedMessageId: selectedMessageId ?? this.selectedMessageId,
 		);
 	}
 }

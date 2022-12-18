@@ -43,15 +43,20 @@ class HomePageState extends State<HomePage> {
 				return Column(
 					mainAxisSize: MainAxisSize.min,
 					children: <Widget>[
-						Container(
-							padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 30),
-							decoration: const BoxDecoration(color: Color.fromARGB(15, 0, 0, 0)),
+						Card(
+							// padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 30),
+							// decoration: const BoxDecoration(color: Color.fromARGB(15, 0, 0, 0)),
+							elevation: 2,
 							margin: const EdgeInsets.all(20),
-							child: _buildBlocker(context, state)
+							child: Padding(
+								padding: const EdgeInsets.all(20),
+								child: _buildBlocker(context, state)
+							)
 						),
 						const Text("Emergency Contacts",
 							style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)
 						),
+						const SizedBox(height: 20),
 						Expanded(
 							child: ContactsListBuilder(
 								future: state.contactsFetched ? null : _getContacts(),
@@ -84,7 +89,7 @@ class HomePageState extends State<HomePage> {
 								"You won't be able to receive calls and messages but an automated message will be sent to the caller/sender when you receive a call or message.",
 								style: TextStyle(
 									fontStyle: FontStyle.italic,
-									fontSize: 12,
+									fontSize: 13,
 									fontWeight: FontWeight.w400,
 									height: 1.4,
 									color: state.isBlocked ? Colors.grey : Colors.transparent
@@ -111,13 +116,15 @@ class HomePageState extends State<HomePage> {
 					activeToggleColor: const Color.fromRGBO(63, 81, 181, 1),
 					inactiveToggleColor: Colors.indigo.shade100,
 					onToggle: (isBlocked) async {
-						context.read<AppBloc>().add(EnableBlockerEvent(isBlocked));
 
 						if (await Permission.phone.isDenied &&
 								await Permission.sms.isDenied) {
 							await _checkPermissions();
+
+							return;
 						}
 
+						context.read<AppBloc>().add(EnableBlockerEvent(isBlocked));
 						await _blockIncomingCalls(isBlocked);
 					},
 				)

@@ -20,6 +20,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
 		on<AddNewMessage>(onAddNewMessage);
 		on<RemovedMessage>(onRemovedMessage);
 		on<MessagesLoaded>(onMessagesLoaded);
+		on<MessageSelected>(onMessageSelected);
 	}
 
 	void onNavigateTo(NavigateTo event, Emitter<AppState> emit) {
@@ -47,10 +48,14 @@ class AppBloc extends Bloc<AppEvent, AppState> {
 	}
 
 	void onMessagesLoaded(MessagesLoaded event, Emitter<AppState> emit) {
-		emit(state.copyWith(messages: event.messages, contactsFetched: event.messagesFetched));
+		emit(state.copyWith(messages: event.messages, messagesFetched: event.messagesFetched));
 	}
 
 	void onRemovedMessage(RemovedMessage event, Emitter<AppState> emit) {
 		emit(state.copyWith(messages: state.messages.where((message) => message.id != event.message.id).toList()));
 	}
+
+  void onMessageSelected(MessageSelected event, Emitter<AppState> emit) {
+    emit(state.copyWith(selectedMessageId: event.selectedMessageId));
+  }
 }

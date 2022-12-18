@@ -6,6 +6,7 @@ import 'package:driverge/services/log_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+
 class MessagesPage extends StatefulWidget {
 	const MessagesPage({super.key});
 
@@ -18,10 +19,12 @@ class MessagesPageState extends State<MessagesPage> {
 	final _formKey = GlobalKey<FormState>();
 	final DatabaseService _databaseService = DatabaseService();
 	List<Message> _messages = [];
+	late int selectedMessageId;
 
 	@override
 	void initState() {
 		super.initState();
+		selectedMessageId = BlocProvider.of<AppBloc>(context).state.selectedMessageId;
 	}
 
 	@override
@@ -46,13 +49,21 @@ class MessagesPageState extends State<MessagesPage> {
 
 	@override
 	Widget build(BuildContext context) {
+		final bool wasMessagesFetched = BlocProvider.of<AppBloc>(context).state.messagesFetched;
 		return Column(
 			children: <Widget>[
 				_buildForm(),
 				const Divider(height: 20),
+				const Padding(
+					padding: EdgeInsets.all(20),
+					child: Text(
+						'Select a message that you want be automatically sent to the texter/caller.',
+						style: TextStyle(fontSize: 16),
+					),
+				),
 				Expanded(
 					child: FutureBuilder<List<Message>>(
-						future: _getMessages(),
+						future: wasMessagesFetched ? null : _getMessages(),
 						builder: (context, snapshot) {
 							if (snapshot.connectionState == ConnectionState.waiting) {
 								return const Center(
@@ -65,9 +76,12 @@ class MessagesPageState extends State<MessagesPage> {
 									child: Text('Error: ${snapshot.error}'),
 								);
 							}
+							
+							_messages = BlocProvider.of<AppBloc>(context).state.messages;
 
-							_messages = snapshot.data!;
-							// print(_messages.length);
+							if(!wasMessagesFetched) {
+								_messages = snapshot.data!;
+							}
 
 							BlocProvider.of<AppBloc>(context)
 									.add(MessagesLoaded(_messages, true));
@@ -78,9 +92,16 @@ class MessagesPageState extends State<MessagesPage> {
 								);
 							}
 
-							return ListView.builder(
-								itemCount: _messages.length,
-								itemBuilder: (context, index) => _buildMessageCard(_messages[index], context)
+							return BlocListener<AppBloc, AppState>(
+								listener: (context, state) {
+									setState(() {
+									  selectedMessageId = state.selectedMessageId;
+									});
+								},
+								child: ListView.builder(
+									itemCount: _messages.length,
+									itemBuilder: (context, index) => _buildMessageCard(_messages[index], index, context)
+								),
 							);
 						}
 					)
@@ -89,20 +110,50 @@ class MessagesPageState extends State<MessagesPage> {
 		);
 	}
 
-	Widget _buildMessageCard(Message message, BuildContext context) {
-		return Card(
-			elevation: 2,,
-			child: ListTile(
-				title: Text(message.text),
-				trailing: IconButton(
-					icon: const Icon(Icons.delete, color: Colors.red),
-					onPressed: () async {
-						BlocProvider.of<AppBloc>(context).add(RemovedMessage(message));
+	Widget _buildMessageCard(Message message, int messageIndex, BuildContext context) {
+		final bool isSelected = selectedMessageId != message.id;
+		return Padding(
+			padding: const EdgeInsets.symmetric(horizontal: 15),
+			child: Card(
+				elevation: 2,
+				child: Padding(
+					padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 15),
+					child: Row(
+						children: <Widget> [
+							Expanded(child: Text(message.text)),
+							InkWell(
+								onTap: () async {
+									BlocProvider.of<AppBloc>(context).add(MessageSelected(message.id!));
+								},
+								borderRadius: BorderRadius.circular(12),
+								splashColor: Colors.indigoAccent.shade200,
+								child: Padding(
+									padding: const EdgeInsets.all(10),
+									child: Icon(
+										isSelected ? Icons.check_box_outline_blank : Icons.check_box, 
+										color: isSelected ? Colors.grey.shade300 : Colors.indigo
+									),
+								),
+							),
+							InkWell(
+								onTap: () async {
+									BlocProvider.of<AppBloc>(context).add(RemovedMessage(message));
 
-						await LogService.logMessage(message, LogMessageType.delete);
+									BlocProvider.of<AppBloc>(context).add(MessageSelected(-1));
 
-						_deleteMessage(message);
-					},
+									await LogService.logMessage(message, LogMessageType.delete);
+
+									_deleteMessage(message);
+								},
+								borderRadius: BorderRadius.circular(12),
+								splashColor: Colors.red.shade200,
+								child: const Padding(
+									padding: EdgeInsets.all(10),
+									child: Icon(Icons.delete, color: Colors.red),
+								),
+							)
+						],
+					), 
 				),
 			),
 		);
@@ -147,8 +198,7 @@ class MessagesPageState extends State<MessagesPage> {
 	}
 
 	void _onMessageAdded(Message message, BuildContext context) async {
-		ScaffoldMessenger.of(context)
-				.showSnackBar(const SnackBar(content: Text('Message Added')));
+		ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Message Added')));
 
 		_addMessage(message);
 

@@ -46,3 +46,8 @@ class MessagesLoaded extends AppEvent {
   bool messagesFetched = false;
 	MessagesLoaded(this.messages, this.messagesFetched);
 }
+
+class MessageSelected extends AppEvent {
+	final int selectedMessageId;
+	MessageSelected(this.selectedMessageId);
+}

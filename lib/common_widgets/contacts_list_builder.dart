@@ -53,9 +53,7 @@ class ContactsListBuilderState extends State<ContactsListBuilder> {
 				_contacts = BlocProvider.of<AppBloc>(context).state.contacts;
 
 				if(widget.future != null) {
-					setState(() {
-						_contacts = snapshot.data!;
-					});
+					_contacts = snapshot.data!;
 				}
 
 				BlocProvider.of<AppBloc>(context).add(ContactsLoaded(_contacts, true));
