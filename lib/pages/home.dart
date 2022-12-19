@@ -83,17 +83,6 @@ class HomePageState extends State<HomePage> {
 									fontWeight: FontWeight.bold,
 									color: Colors.black
 								),
-							),
-							const SizedBox(height: 5),
-							Text(
-								"You won't be able to receive calls and messages but an automated message will be sent to the caller/sender when you receive a call or message.",
-								style: TextStyle(
-									fontStyle: FontStyle.italic,
-									fontSize: 13,
-									fontWeight: FontWeight.w400,
-									height: 1.4,
-									color: state.isBlocked ? Colors.grey : Colors.transparent
-								),
 							)
 						],
 					),
@@ -125,8 +114,27 @@ class HomePageState extends State<HomePage> {
 						}
 
 						context.read<AppBloc>().add(EnableBlockerEvent(isBlocked));
+						
 						await _blockIncomingCalls(isBlocked);
 					},
+				),
+				Visibility(
+					visible: state.isBlocked,
+					child: Column(
+					  children: const <Widget> [
+            	SizedBox(height: 10),
+					    Text(
+					    	"You won't be able to receive calls and messages but an automated message will be sent to the caller/sender when you receive a call or message.",
+					    	style: TextStyle(
+					    		fontStyle: FontStyle.italic,
+					    		fontSize: 13,
+					    		fontWeight: FontWeight.w400,
+					    		height: 1.4,
+					    		color: Colors.grey
+					    	),
+					    ),
+					  ],
+					),
 				)
 			]
 		);
