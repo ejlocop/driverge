@@ -3,11 +3,9 @@ import 'dart:convert';
 class Message {
 	final int? id;
 	final String text;
-	final int? selected;
 
 	Message({
 		this.id,
-		this.selected,
 		required this.text
 	});
 
@@ -17,7 +15,6 @@ class Message {
 		return {
 			'id': id,
 			'text': text,
-			'selected': selected
 		};
 	}
 
@@ -25,7 +22,6 @@ class Message {
 		return Message(
 			id: map['id']?.toInt() ?? 0,
 			text: map['text'] ?? '',
-			selected: map['selected'] ?? 0
 		);
 	}
 
@@ -38,7 +34,7 @@ class Message {
 	// each Contact when using the print statement.
 	@override
 	String toString() {
-		return 'Message(id: $id, text: $text, selected: $selected)';
+		return 'Message(id: $id, text: $text)';
 	}
 }
 

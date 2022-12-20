@@ -92,10 +92,13 @@ class MessagesPageState extends State<MessagesPage> {
 								);
 							}
 
+							BlocProvider.of<AppBloc>(context)
+									.add(MessageSelected(_messages[0].id!));
+
 							return BlocListener<AppBloc, AppState>(
 								listener: (context, state) {
 									setState(() {
-									  selectedMessageId = state.selectedMessageId;
+										selectedMessageId = state.selectedMessageId;
 									});
 								},
 								child: ListView.builder(
