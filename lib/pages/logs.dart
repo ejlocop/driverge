@@ -1,7 +1,6 @@
 import 'package:driverge/models/log.dart';
 import 'package:driverge/services/database.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 class LogsPage extends StatefulWidget {
 	const LogsPage({super.key});

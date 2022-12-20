@@ -1,7 +1,6 @@
 import 'package:driverge/blocs/bloc/app_bloc.dart';
 import 'package:driverge/common_widgets/contacts_list_builder.dart';
 import 'package:driverge/models/contact.dart';
-import 'package:driverge/models/log.dart';
 import 'package:driverge/services/database.dart';
 import 'package:driverge/services/log_service.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_switch/flutter_switch.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:sms_call_barring_plugin/sms_call_barring_plugin.dart';
 
 class HomePage extends StatefulWidget {
 	const HomePage({super.key});
@@ -21,6 +21,7 @@ class HomePageState extends State<HomePage> {
 	// bool _isBlocked = false;
 	static const MethodChannel _methodChannel = MethodChannel('com.ejlocop.driverge/channel');
 	final DatabaseService _databaseService = DatabaseService();
+	final _smsCallBarringPlugin = SmsCallBarringPlugin();
 
 	Future<List<Contact>> _getContacts() async {
 		return await _databaseService.contacts();
@@ -121,19 +122,19 @@ class HomePageState extends State<HomePage> {
 				Visibility(
 					visible: state.isBlocked,
 					child: Column(
-					  children: const <Widget> [
-            	SizedBox(height: 10),
-					    Text(
-					    	"You won't be able to receive calls and messages but an automated message will be sent to the caller/sender when you receive a call or message.",
-					    	style: TextStyle(
-					    		fontStyle: FontStyle.italic,
-					    		fontSize: 13,
-					    		fontWeight: FontWeight.w400,
-					    		height: 1.4,
-					    		color: Colors.grey
-					    	),
-					    ),
-					  ],
+						children: <Widget> [
+							const SizedBox(height: 10),
+							Text(
+								"You won't be able to receive calls and messages but an automated message will be sent to the caller/sender when you receive a call or message.",
+								style: TextStyle(
+									// fontStyle: FontStyle.italic,
+									fontSize: 14,
+									fontWeight: FontWeight.w400,
+									height: 1.4,
+									color: Colors.grey.shade700
+								),
+							),
+						],
 					),
 				)
 			]
@@ -144,10 +145,9 @@ class HomePageState extends State<HomePage> {
 
 	Future _blockIncomingCalls(bool isBlocked) async {
 		try {
-			// final result = await _methodChannel.invokeMethod('setBlocking', {
-			// 	'isBlocked': isBlocked
-			// });
-			// print(result);
+			final platformVersion = await _smsCallBarringPlugin.toggleBarring(isBlocked);
+
+			print('platformVersion $platformVersion');
 			await LogService.logBlocking(isBlocked);
 
 		} on PlatformException catch (e) {

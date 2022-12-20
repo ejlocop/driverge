@@ -1,5 +1,4 @@
 import 'package:driverge/blocs/bloc/app_bloc.dart';
-import 'package:driverge/models/log.dart';
 import 'package:driverge/models/message.dart';
 import 'package:driverge/services/database.dart';
 import 'package:driverge/services/log_service.dart';
