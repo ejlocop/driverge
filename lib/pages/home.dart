@@ -8,7 +8,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_switch/flutter_switch.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:sms_call_barring_plugin/sms_call_barring_plugin.dart';
 
 class HomePage extends StatefulWidget {
 	const HomePage({super.key});
@@ -21,7 +20,7 @@ class HomePageState extends State<HomePage> {
 	// bool _isBlocked = false;
 	static const MethodChannel _methodChannel = MethodChannel('com.ejlocop.driverge/channel');
 	final DatabaseService _databaseService = DatabaseService();
-	final _smsCallBarringPlugin = SmsCallBarringPlugin();
+	// final _smsCallBarringPlugin = SmsCallBarringPlugin();
 
 	Future<List<Contact>> _getContacts() async {
 		return await _databaseService.contacts();
@@ -145,9 +144,9 @@ class HomePageState extends State<HomePage> {
 
 	Future _blockIncomingCalls(bool isBlocked) async {
 		try {
-			final platformVersion = await _smsCallBarringPlugin.toggleBarring(isBlocked);
+			// final platformVersion = await _smsCallBarringPlugin.toggleBarring(isBlocked);
 
-			print('platformVersion $platformVersion');
+			// print('platformVersion $platformVersion');
 			await LogService.logBlocking(isBlocked);
 
 		} on PlatformException catch (e) {

@@ -1,12 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
 	package="com.ejlocop.driverge">
-
-    <uses-permission android:name="android.permission.RECEIVE_SMS" />
-	<uses-permission android:name="android.permission.READ_PHONE_STATE" />
-	<uses-permission android:name="android.permission.WRITE_SMS" />
-
-	<application
-		android:label="driverge"
+   <application
+		android:label="Driverge"
 		android:name="${applicationName}"
 		android:icon="@mipmap/ic_launcher">
 		<activity
@@ -16,7 +11,6 @@
 			android:theme="@style/LaunchTheme"
 			android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
 			android:hardwareAccelerated="true"
-			android:enableOnBackInvokedCallback="true"
 			android:windowSoftInputMode="adjustResize">
 			<!-- Specifies an Android theme to apply to this Activity as soon as
 				 the Android process has started. This theme is visible to the user
@@ -36,30 +30,5 @@
 		<meta-data
 			android:name="flutterEmbedding"
 			android:value="2" />
-
-		<!-- <receiver android:name="com.ejlocop.sms_call_barring_plugin.CallBlocker" android:enabled="true" android:exported="true">
-			<intent-filter>
-				<action android:name="android.intent.action.PHONE_STATE" />
-			</intent-filter>
-		</receiver> -->
-		<!-- <service android:name="com.ejlocop.CallBlocker" android:permission="android.permission.BIND_CALL_SCREENING_SERVICE"
-			android:enabled="true" android:exported="true">
-			<intent-filter android:priority="1000">
-				<action android:name="android.telecom.CallScreeningService" />
-			</intent-filter>
-		</service> -->
-		<!-- <receiver android:name="com.ejlocop.sms_call_barring_plugin.Blocker" android:enabled="true" android:exported="true">
-			<intent-filter android:priority="9999">
-				<action android:name="android.provider.Telephony.SMS_RECEIVED" />
-			</intent-filter>
-		</receiver> -->
-
-		<receiver android:name="com.ejlocop.sms_call_barring_plugin.Blocker" android:enabled="true" android:exported="true">
-			<intent-filter android:priority="9999999">
-				<action android:name="android.intent.action.PHONE_STATE" />
-				<action android:name="android.provider.Telephony.SMS_RECEIVED" />
-			</intent-filter>
-		</receiver>
-
 	</application>
 </manifest>
