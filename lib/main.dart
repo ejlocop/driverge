@@ -1,6 +1,7 @@
+import 'dart:collection';
+
 import 'package:driverge/blocs/bloc/app_bloc.dart';
 import 'package:driverge/drawer_widget.dart';
-import 'package:driverge/models/contact.dart';
 import 'package:driverge/models/message.dart';
 import 'package:driverge/models/nav.dart';
 import 'package:driverge/pages/contacts.dart';
@@ -8,8 +9,11 @@ import 'package:driverge/pages/home.dart';
 import 'package:driverge/pages/logs.dart';
 import 'package:driverge/pages/messages.dart';
 import 'package:driverge/services/database.dart';
+import 'package:driverge/services/log_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:telephony/telephony.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -42,32 +46,42 @@ class MyHomePage extends StatefulWidget {
 
 class MyHomePageState extends State<MyHomePage> {
 	late AppBloc _bloc;
-	final DatabaseService _databaseService = DatabaseService();
   late Widget _content;
+	final methodChannel = MethodChannel('com.ejlocop.driverge/channel');
+	final telephony = Telephony.instance;
+	final DatabaseService databaseService = DatabaseService();
 
 	@override
 	void initState() {
 		super.initState();
 		_bloc = AppBloc();
 		_content = _getContentForState(_bloc.state.selectedItem);
+		methodChannel.setMethodCallHandler((call) async {
+			if(call.method == 'barredContact') {
+				final args = call.arguments;
+				// debugPrint("args $args");
+				final phoneNumber = args['phoneNumber'] as String;
+				final source = args['source'] as String;
+				_onBarredContact(source, phoneNumber);
+			}
+		});
 
-		_fetchMessagesAndContacts();
+		_fetchMessages();
 	}
 
-	void _fetchMessagesAndContacts () async {
-		List<Contact> contacts = await _getContacts();
-		List<Message> messages = await _getMessages();
-
-		_bloc.add(ContactsLoaded(contacts, true));
-		_bloc.add(MessagesLoaded(messages, true));
+	Future _fetchMessages() async {
+		List<Message> messages = await databaseService.messages();
+		
+		_bloc.add(MessagesLoaded(messages, messages.isNotEmpty));
+		_bloc.add(MessageSelected(messages.first.id ?? -1));
 	}
 
-	Future<List<Contact>> _getContacts() async {
-		return await _databaseService.contacts();
-	}
-	
-	Future<List<Message>> _getMessages() async {
-		return await _databaseService.messages();
+	Future _onBarredContact(String source, String phoneNumber) async {
+		Message message = _bloc.state.messages.firstWhere((message) => message.id == _bloc.state.selectedMessageId);
+
+		await telephony.sendSms(to: phoneNumber, message: message.text);
+		await LogService.logBarring(source, phoneNumber);
+		await LogService.logFeedback(phoneNumber, message);
 	}
 
 	@override

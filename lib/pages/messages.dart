@@ -4,7 +4,7 @@ import 'package:driverge/services/database.dart';
 import 'package:driverge/services/log_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
+import 'package:confirm_dialog/confirm_dialog.dart';
 
 class MessagesPage extends StatefulWidget {
 	const MessagesPage({super.key});
@@ -19,6 +19,7 @@ class MessagesPageState extends State<MessagesPage> {
 	final DatabaseService _databaseService = DatabaseService();
 	List<Message> _messages = [];
 	late int selectedMessageId;
+	late bool isBlocked;
 
 	@override
 	void initState() {
@@ -49,6 +50,8 @@ class MessagesPageState extends State<MessagesPage> {
 	@override
 	Widget build(BuildContext context) {
 		final bool wasMessagesFetched = BlocProvider.of<AppBloc>(context).state.messagesFetched;
+		isBlocked = BlocProvider.of<AppBloc>(context).state.isBlocked;
+
 		return Column(
 			children: <Widget>[
 				_buildForm(),
@@ -80,6 +83,8 @@ class MessagesPageState extends State<MessagesPage> {
 
 							if(!wasMessagesFetched) {
 								_messages = snapshot.data!;
+								BlocProvider.of<AppBloc>(context)
+										.add(MessageSelected(_messages[0].id!));
 							}
 
 							BlocProvider.of<AppBloc>(context)
@@ -90,9 +95,6 @@ class MessagesPageState extends State<MessagesPage> {
 									child: Text('No messages found'),
 								);
 							}
-
-							BlocProvider.of<AppBloc>(context)
-									.add(MessageSelected(_messages[0].id!));
 
 							return BlocListener<AppBloc, AppState>(
 								listener: (context, state) {
@@ -125,6 +127,22 @@ class MessagesPageState extends State<MessagesPage> {
 							Expanded(child: Text(message.text)),
 							InkWell(
 								onTap: () async {
+									
+									if(isBlocked) {
+										if(!(await confirm(context, 
+											content: const Text('Blocking of calls/SMS will be disabled when you change the default message. Do you want to continue?'), 
+											textOK: const Text('Yes'), 
+											textCancel: const Text('No')
+										))) {
+											
+											return;
+										}
+									}
+									
+									setState(() {
+										isBlocked = false;
+									});
+									BlocProvider.of<AppBloc>(context).add(EnableBlockerEvent(false));
 									BlocProvider.of<AppBloc>(context).add(MessageSelected(message.id!));
 								},
 								borderRadius: BorderRadius.circular(12),

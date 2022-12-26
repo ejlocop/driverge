@@ -1,6 +1,7 @@
 import 'package:driverge/blocs/bloc/app_bloc.dart';
 import 'package:driverge/common_widgets/contacts_list_builder.dart';
 import 'package:driverge/models/contact.dart';
+import 'package:driverge/models/message.dart';
 import 'package:driverge/services/database.dart';
 import 'package:driverge/services/log_service.dart';
 import 'package:flutter/material.dart';
@@ -20,7 +21,7 @@ class HomePageState extends State<HomePage> {
 	// bool _isBlocked = false;
 	static const MethodChannel _methodChannel = MethodChannel('com.ejlocop.driverge/channel');
 	final DatabaseService _databaseService = DatabaseService();
-	// final _smsCallBarringPlugin = SmsCallBarringPlugin();
+	bool _isBlocking = false;
 
 	Future<List<Contact>> _getContacts() async {
 		return await _databaseService.contacts();
@@ -97,6 +98,7 @@ class HomePageState extends State<HomePage> {
 					activeColor: Colors.indigoAccent,
 					padding: 8.0,
 					showOnOff: true,
+					disabled: _isBlocking,
 					activeTextColor: Colors.white,
 					inactiveTextColor: Colors.white54,
 					activeIcon: const Icon(Icons.phone_disabled, color: Colors.white),
@@ -106,16 +108,21 @@ class HomePageState extends State<HomePage> {
 					inactiveToggleColor: Colors.indigo.shade100,
 					onToggle: (isBlocked) async {
 
-						if (await Permission.phone.isDenied &&
-								await Permission.sms.isDenied) {
+						// if (await Permission.phone.isDenied &&
+								// await Permission.sms.isDenied) {
+						if (await Permission.phone.isDenied) {
 							await _checkPermissions();
 
 							return;
 						}
 
+						setState(() {
+						  _isBlocking = true;
+						});
+
 						context.read<AppBloc>().add(EnableBlockerEvent(isBlocked));
 						
-						await _blockIncomingCalls(isBlocked);
+						await _toggleBlocker(isBlocked);
 					},
 				),
 				Visibility(
@@ -142,23 +149,39 @@ class HomePageState extends State<HomePage> {
 
 	// Widget _buildSwitchBlocker() => ;
 
-	Future _blockIncomingCalls(bool isBlocked) async {
+	Future _toggleBlocker(bool isBlocked) async {
 		try {
-			// final platformVersion = await _smsCallBarringPlugin.toggleBarring(isBlocked);
+			final Map<String, dynamic> args = {
+				"isBlocked": isBlocked
+			};
+			final methodChannel = await _methodChannel.invokeMethod('toggleBlocker', args);
 
-			// print('platformVersion $platformVersion');
+			print('blocker $methodChannel');
 			await LogService.logBlocking(isBlocked);
 
 		} on PlatformException catch (e) {
-			print("Failed to get battery level: '${e.message}'.");
+			debugPrint("Failed to call method: '${e.message}'.");
+		} finally {
+			setState(() {
+        _isBlocking = false;
+      });
 		}
 	}
 
-	Future<Map<Permission, PermissionStatus>> _checkPermissions() async {
-		Map<Permission, PermissionStatus> statuses = await [
-			Permission.phone,
-			Permission.sms,
-		].request();
-		return statuses;
+	Future _checkPermissions() async {
+		try {
+      final methodChannel = await _methodChannel.invokeMethod('requestPermissions');
+      debugPrint(methodChannel);
+    } on PlatformException catch (e) {
+      debugPrint("Failed to call method: '${e.message}'.");
+    }
 	}
+
+	// Future<Map<Permission, PermissionStatus>> _checkPermissions() async {
+	// 	Map<Permission, PermissionStatus> statuses = await [
+	// 		// Permission.phone,
+	// 		Permission.sms,
+	// 	].request();
+	// 	return statuses;
+	// }
 }

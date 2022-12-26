@@ -27,6 +27,22 @@ class LogService {
 		));
 	}
 
+	static Future<void> logBarring(String source, String phoneNumber) async {
+		final String message = "Blocked incoming $source from $phoneNumber";
+		await DatabaseService().insertLog(Log(
+			type: 'blocking',
+			message: message
+		));
+	}
+
+	static Future<void> logFeedback(String phoneNumber, Message message) async {
+		final String _message = "Sent \"${message.text}\" feedback to $phoneNumber";
+		await DatabaseService().insertLog(Log(
+			type: 'feedback',
+			message: _message
+		));
+	}
+
 	static String _getLogContactTypeVerb(LogContactType logType) {
 		switch(logType) {
 			case LogContactType.delete:

@@ -45,23 +45,31 @@ class DatabaseService {
 
 		// Run the CREATE {messages} TABLE statement on the database.
 		await db.execute(
-			'CREATE TABLE messages(id INTEGER PRIMARY KEY, text TEXT, selected INTEGER DEFAULT 0)',
+			'CREATE TABLE messages(id INTEGER PRIMARY KEY, text TEXT)',
 		);
+
+    print("Database: creating tables");
 
 		_seedMessages();
 	}
 
 	void _seedMessages() async {
-		List<Message> messages = [
-			Message(id: 1, text: 'I will respond to your message when I come back'),
-			Message(id: 2, text: 'I\'m currently driving'),
-			Message(id: 3, text: 'I\'m driving, safety first!'),
-			Message(id: 4, text: 'Text me later, I am in charge of the wheels today'),
-		];
+		// List<Message> messages = [
+		// 	Message(id: 1, text: 'I will respond to your message when I come back'),
+		// 	Message(id: 2, text: 'I\'m currently driving'),
+		// 	Message(id: 3, text: 'I\'m driving, safety first!'),
+		// 	Message(id: 4, text: 'Text me later, I am in charge of the wheels today'),
+		// ];
 		
-		for (Message message in messages) {
-			await inserMessage(message);
-		}
+		// for (Message message in messages) {
+		// 	await inserMessage(message);
+		// }
+    Future.wait([
+      inserMessage(Message(id: 1, text: 'I will respond to your message when I come back')),
+      inserMessage(Message(id: 2, text: 'I\'m currently driving')),
+      inserMessage(Message(id: 3, text: 'I\'m driving, safety first!')),
+      inserMessage(Message(id: 4, text: 'Text me later, I am in charge of the wheels today')),
+    ]);
 	}
 
 	Future<void> inserContact(Contact contact) async {
