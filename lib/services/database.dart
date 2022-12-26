@@ -37,7 +37,7 @@ class DatabaseService {
 		await db.execute(
 			'CREATE TABLE contacts(id INTEGER PRIMARY KEY, name TEXT, phone TEXT)',
 		);
-    
+		
 		// Run the CREATE {logs} TABLE statement on the database.
 		await db.execute(
 			'CREATE TABLE logs(id INTEGER PRIMARY KEY, type TEXT, message TEXT, date TEXT DEFAULT (datetime(\'now\', \'localtime\')))',
@@ -48,28 +48,18 @@ class DatabaseService {
 			'CREATE TABLE messages(id INTEGER PRIMARY KEY, text TEXT)',
 		);
 
-    print("Database: creating tables");
+		print("Database: creating tables");
 
 		_seedMessages();
 	}
 
 	void _seedMessages() async {
-		// List<Message> messages = [
-		// 	Message(id: 1, text: 'I will respond to your message when I come back'),
-		// 	Message(id: 2, text: 'I\'m currently driving'),
-		// 	Message(id: 3, text: 'I\'m driving, safety first!'),
-		// 	Message(id: 4, text: 'Text me later, I am in charge of the wheels today'),
-		// ];
-		
-		// for (Message message in messages) {
-		// 	await inserMessage(message);
-		// }
-    Future.wait([
-      inserMessage(Message(id: 1, text: 'I will respond to your message when I come back')),
-      inserMessage(Message(id: 2, text: 'I\'m currently driving')),
-      inserMessage(Message(id: 3, text: 'I\'m driving, safety first!')),
-      inserMessage(Message(id: 4, text: 'Text me later, I am in charge of the wheels today')),
-    ]);
+		Future.wait([
+			inserMessage(Message(id: 1, text: 'I will respond to your message when I come back')),
+			inserMessage(Message(id: 2, text: 'I\'m currently driving')),
+			inserMessage(Message(id: 3, text: 'I\'m driving, safety first!')),
+			inserMessage(Message(id: 4, text: 'Text me later, I am in charge of the wheels today')),
+		]);
 	}
 
 	Future<void> inserContact(Contact contact) async {
@@ -103,7 +93,7 @@ class DatabaseService {
 		// Get a reference to the database.
 		final db = await _databaseService.database;
 
-    print('fetching contacts');
+		print('fetching contacts');
 
 		// Query the table for all the Contacts.
 		final List<Map<String, dynamic>> contacts = await db.query('contacts');
@@ -116,7 +106,7 @@ class DatabaseService {
 		
 		final db = await _databaseService.database;
 
-    print('fetching messages');
+		print('fetching messages');
 		
 		final List<Map<String, dynamic>> messages = await db.query('messages');
 		

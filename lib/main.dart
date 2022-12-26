@@ -1,5 +1,3 @@
-import 'dart:collection';
-
 import 'package:driverge/blocs/bloc/app_bloc.dart';
 import 'package:driverge/drawer_widget.dart';
 import 'package:driverge/models/message.dart';

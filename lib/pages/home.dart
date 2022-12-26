@@ -1,7 +1,6 @@
 import 'package:driverge/blocs/bloc/app_bloc.dart';
 import 'package:driverge/common_widgets/contacts_list_builder.dart';
 import 'package:driverge/models/contact.dart';
-import 'package:driverge/models/message.dart';
 import 'package:driverge/services/database.dart';
 import 'package:driverge/services/log_service.dart';
 import 'package:flutter/material.dart';
