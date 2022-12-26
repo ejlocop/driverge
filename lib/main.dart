@@ -6,16 +6,19 @@ import 'package:driverge/pages/contacts.dart';
 import 'package:driverge/pages/home.dart';
 import 'package:driverge/pages/logs.dart';
 import 'package:driverge/pages/messages.dart';
+import 'package:driverge/services/commands.dart';
 import 'package:driverge/services/database.dart';
 import 'package:driverge/services/log_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:telephony/telephony.dart';
+import 'package:speech_to_text/speech_to_text.dart';
 
 void main() {
-  WidgetsFlutterBinding.ensureInitialized();
-  runApp(const MyApp());
+	WidgetsFlutterBinding.ensureInitialized();
+	runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -44,15 +47,20 @@ class MyHomePage extends StatefulWidget {
 
 class MyHomePageState extends State<MyHomePage> {
 	late AppBloc _bloc;
-  late Widget _content;
+	late Widget _content;
 	final methodChannel = MethodChannel('com.ejlocop.driverge/channel');
 	final telephony = Telephony.instance;
 	final DatabaseService databaseService = DatabaseService();
+	SpeechToText _speechToText = SpeechToText();
+	String _lastWords = '';
+	bool _speechEnabled = false;
+	Commands _commands = Commands();
 
 	@override
 	void initState() {
 		super.initState();
 		_bloc = AppBloc();
+    _initSpeech();
 		_content = _getContentForState(_bloc.state.selectedItem);
 		methodChannel.setMethodCallHandler((call) async {
 			if(call.method == 'barredContact') {
@@ -64,7 +72,32 @@ class MyHomePageState extends State<MyHomePage> {
 			}
 		});
 
+		_commands.initializeCommands();
+
 		_fetchMessages();
+	}
+
+	void _initSpeech() async {
+		_speechEnabled = await _speechToText.initialize();
+		setState(() {});
+	}
+
+	/// Each time to start a speech recognition session
+	void _startListening() async {
+		await _speechToText.listen(onResult: _onSpeechResult);
+		setState(() {});
+	}
+
+	void _stopListening() async {
+		await _speechToText.stop();
+		_commands.handle(_lastWords);
+		setState(() {});
+	}
+
+	void _onSpeechResult(SpeechRecognitionResult result) {
+		setState(() {
+			_lastWords = result.recognizedWords;
+		});
 	}
 
 	Future _fetchMessages() async {
@@ -85,6 +118,7 @@ class MyHomePageState extends State<MyHomePage> {
 	@override
 	void dispose() {
 		super.dispose();
+		_stopListening();
 	}
 
 	@override
@@ -113,6 +147,12 @@ class MyHomePageState extends State<MyHomePage> {
 					duration: const Duration(milliseconds: 500),
 					child: _content,
 				),
+				floatingActionButton: FloatingActionButton(
+					onPressed: _speechEnabled ? _speechToText.isNotListening ? _startListening : _stopListening : null,
+					child: _speechToText.isListening ? Icon(Icons.mic_off) : Icon(Icons.mic),
+					backgroundColor: Colors.indigo,
+					tooltip: "Please hold the Mic button to speak and initiate the voice command.",
+				)
 			)
 		)
 	);
