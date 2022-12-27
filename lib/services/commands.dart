@@ -1,26 +1,36 @@
-import 'package:flutter/cupertino.dart';
+import 'package:driverge/blocs/bloc/app_bloc.dart';
 
 class Commands {
-	final Map _commands = new Map();
+	late List<String> _commands = [];
+	AppBloc bloc;
 
-	Commands();
+	Commands({required this.bloc});
 
 	void initializeCommands() {
-		final _mapping = <String, List<String>> {
-			"block": ["toggle blocking", "enable blocking", "disable blocking"],
-			"contact": ["name", "number"],
-		};
+		final _mapping = [
+      "enable",
+      "disable",
+      "toggle",
+		];
 		_commands.addAll(_mapping);
 	}
 
 	void handle (String command) {
-		String _command = _recognizeCommand(command);
-		debugPrint("Command: $command");
+		_determineBlocking(command);
 	}
 
-	_recognizeCommand(String command) {
-		if(!_commands.containsKey(command)) {
-			throw new UnknownCommandException("Unknown command $command");
+	_determineBlocking(String command) {
+		if(command.contains("enable") && !bloc.state.isBlocked) {
+			bloc.add(EnableBlockerEvent(true));
+		}
+		else if(command.contains("disable") && bloc.state.isBlocked) {
+			bloc.add(EnableBlockerEvent(false));
+		}
+		else if(command.contains("toggle")) {
+			bloc.add(EnableBlockerEvent(bloc.state.isBlocked ? false : true));
+		}
+		else {
+			throw new UnknownCommandException("Unknown command: $command");
 		}
 	}
 }

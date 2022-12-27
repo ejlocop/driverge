@@ -15,6 +15,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:telephony/telephony.dart';
 import 'package:speech_to_text/speech_to_text.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 void main() {
 	WidgetsFlutterBinding.ensureInitialized();
@@ -54,13 +55,13 @@ class MyHomePageState extends State<MyHomePage> {
 	SpeechToText _speechToText = SpeechToText();
 	String _lastWords = '';
 	bool _speechEnabled = false;
-	Commands _commands = Commands();
+	late Commands _commands;
 
 	@override
 	void initState() {
 		super.initState();
 		_bloc = AppBloc();
-    _initSpeech();
+		_initSpeech();
 		_content = _getContentForState(_bloc.state.selectedItem);
 		methodChannel.setMethodCallHandler((call) async {
 			if(call.method == 'barredContact') {
@@ -72,9 +73,8 @@ class MyHomePageState extends State<MyHomePage> {
 			}
 		});
 
-		_commands.initializeCommands();
-
 		_fetchMessages();
+		_commands = Commands(bloc: _bloc);
 	}
 
 	void _initSpeech() async {
@@ -84,18 +84,40 @@ class MyHomePageState extends State<MyHomePage> {
 
 	/// Each time to start a speech recognition session
 	void _startListening() async {
-		await _speechToText.listen(onResult: _onSpeechResult);
+		await _speechToText.listen(
+			onResult: _onSpeechResult,
+			listenFor: const Duration(minutes: 1),
+		);
 		setState(() {});
 	}
 
 	void _stopListening() async {
+		String? message;
 		await _speechToText.stop();
-		_commands.handle(_lastWords);
+		try {
+			_commands.handle(_lastWords);
+			message = _lastWords;
+		} on UnknownCommandException catch(e) {
+    	debugPrint(e.toString());
+			message = e.message as String;
+		}
+		
+    ScaffoldMessenger.of(context)
+      .showSnackBar(SnackBar(
+				content: Text(message),
+				duration: Duration(seconds: 2),
+				behavior: SnackBarBehavior.floating,
+				shape: StadiumBorder(),
+				margin: EdgeInsets.all(20),
+			));
 		setState(() {});
 	}
 
 	void _onSpeechResult(SpeechRecognitionResult result) {
 		setState(() {
+			if(result.finalResult) {
+				_stopListening();
+			}
 			_lastWords = result.recognizedWords;
 		});
 	}
@@ -118,7 +140,6 @@ class MyHomePageState extends State<MyHomePage> {
 	@override
 	void dispose() {
 		super.dispose();
-		_stopListening();
 	}
 
 	@override
