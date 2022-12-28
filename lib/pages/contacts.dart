@@ -123,7 +123,15 @@ class ContactsPageState extends State<ContactsPage> {
 
 	void _onContactAdded(Contact contact, BuildContext context) async {
 		ScaffoldMessenger.of(context)
-			.showSnackBar(const SnackBar(content: Text('Contact Added')));
+			.showSnackBar(
+				SnackBar(
+					content: Text('Contact Added'),
+					behavior: SnackBarBehavior.floating,
+					duration: Duration(seconds: 2),
+					shape: StadiumBorder(),
+					margin: EdgeInsets.all(20),
+				)
+			);
 
 		_addContact(contact);
 
@@ -131,7 +139,7 @@ class ContactsPageState extends State<ContactsPage> {
 
 		FocusScope.of(context).requestFocus(FocusNode());
 
-    await LogService.logContact(contact, LogContactType.add);
+		await LogService.logContact(contact, LogContactType.add);
 
 		_nameController.clear();
 		_numberController.clear();

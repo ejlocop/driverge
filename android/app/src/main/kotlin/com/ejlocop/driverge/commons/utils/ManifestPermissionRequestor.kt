@@ -1,6 +1,7 @@
 package com.ejlocop.driverge.commons.utils
 
 import android.Manifest
+import android.util.Log
 import com.ejlocop.driverge.MainActivity
 import com.ejlocop.driverge.R
 import com.ejlocop.driverge.commons.base.BaseActivity
@@ -39,10 +40,7 @@ class ManifestPermissionRequesterImpl : ManifestPermissionRequester,
      */
     private val permissions =
             arrayOf(
-                Manifest.permission.READ_PHONE_STATE,
-                Manifest.permission.READ_SMS,
-                Manifest.permission.RECEIVE_SMS,
-                Manifest.permission.SEND_SMS
+                Manifest.permission.READ_PHONE_STATE
             )
 
     /**
@@ -68,6 +66,7 @@ class ManifestPermissionRequesterImpl : ManifestPermissionRequester,
             permissions: Array<out String>,
             grantResults: IntArray
     ) {
+        Log.d("onRequestPermissionsResult", "onRequestPermissionsResult $requestCode, $permissions, $grantResults")
         EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this)
     }
 

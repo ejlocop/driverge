@@ -12,3 +12,4 @@ data class PermissionDenied(val requestCode: Int, val perms: MutableList<String>
 data class PermissionGranted(val requestCode: Int, val perms: MutableList<String>) : UiEvent()
 object PhoneManifestPermissionsEnabled : UiEvent()
 object PhoneCapabilityEnabled : UiEvent()
+object MessagingCapabilityEnabled : UiEvent()

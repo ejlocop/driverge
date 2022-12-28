@@ -1,6 +1,7 @@
 import 'package:driverge/models/log.dart';
 import 'package:driverge/services/database.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class LogsPage extends StatefulWidget {
 	const LogsPage({super.key});
@@ -59,6 +60,7 @@ class LogsPageState extends State<LogsPage> {
 			itemCount: snapshot.data!.length,
 			itemBuilder: (context, index) {
 				Log log = snapshot.data![index];
+				var date = DateFormat("MMM dd, HH:mm a").format(DateTime.parse(log.date ?? ''));
 				return ListTile(
 					title: Text(log.message, 
 						style: const TextStyle(
@@ -66,7 +68,7 @@ class LogsPageState extends State<LogsPage> {
 							fontWeight: FontWeight.w600
 						)
 					),
-					subtitle: Text(log.date ?? ''),
+					subtitle: Text(date),
 				);
 			},
 		);

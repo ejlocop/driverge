@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:driverge/blocs/bloc/app_bloc.dart';
 import 'package:driverge/drawer_widget.dart';
 import 'package:driverge/models/message.dart';
@@ -12,10 +14,11 @@ import 'package:driverge/services/log_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:telephony/telephony.dart';
 import 'package:speech_to_text/speech_to_text.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:http/http.dart' as http;
 
 void main() {
 	WidgetsFlutterBinding.ensureInitialized();
@@ -56,12 +59,12 @@ class MyHomePageState extends State<MyHomePage> {
 	String _lastWords = '';
 	bool _speechEnabled = false;
 	late Commands _commands;
+	int _counter = 0;
 
 	@override
 	void initState() {
 		super.initState();
 		_bloc = AppBloc();
-		_initSpeech();
 		_content = _getContentForState(_bloc.state.selectedItem);
 		methodChannel.setMethodCallHandler((call) async {
 			if(call.method == 'barredContact') {
@@ -72,15 +75,28 @@ class MyHomePageState extends State<MyHomePage> {
 				_onBarredContact(source, phoneNumber);
 			}
 		});
-
-		_fetchMessages();
 		_commands = Commands(bloc: _bloc);
+		_initSpeech();
+
+		// fetchCounter();
 	}
 
-	void _initSpeech() async {
+	Future _initSpeech() async {
+		if(await Permission.microphone.isDenied) {
+			return;
+		}
 		_speechEnabled = await _speechToText.initialize();
 		setState(() {});
 	}
+
+	// Future fetchCounter() async {
+	// 	final response = await http.get(Uri.parse('https://api.countapi.xyz/hit/ejlocop.com/4b7579fd-6cb0-47b6-9391-bea71c555d1f'));
+	// 	if(response.statusCode == 200) {
+	// 		setState(() {
+	// 			_counter = json.decode(response.body)['value'] as int;
+	// 		});
+	// 	}
+	// }
 
 	/// Each time to start a speech recognition session
 	void _startListening() async {
@@ -98,12 +114,12 @@ class MyHomePageState extends State<MyHomePage> {
 			_commands.handle(_lastWords);
 			message = _lastWords;
 		} on UnknownCommandException catch(e) {
-    	debugPrint(e.toString());
+			debugPrint(e.toString());
 			message = e.message as String;
 		}
 		
-    ScaffoldMessenger.of(context)
-      .showSnackBar(SnackBar(
+		ScaffoldMessenger.of(context)
+			.showSnackBar(SnackBar(
 				content: Text(message),
 				duration: Duration(seconds: 2),
 				behavior: SnackBarBehavior.floating,
@@ -120,13 +136,6 @@ class MyHomePageState extends State<MyHomePage> {
 			}
 			_lastWords = result.recognizedWords;
 		});
-	}
-
-	Future _fetchMessages() async {
-		List<Message> messages = await databaseService.messages();
-		
-		_bloc.add(MessagesLoaded(messages, messages.isNotEmpty));
-		_bloc.add(MessageSelected(messages.first.id ?? -1));
 	}
 
 	Future _onBarredContact(String source, String phoneNumber) async {
@@ -151,29 +160,41 @@ class MyHomePageState extends State<MyHomePage> {
 					_content = _getContentForState(state.selectedItem);
 				});
 			},
-			child: Scaffold(
-				drawer: NavDrawerWidget(),
-				appBar: AppBar(
-					title: BlocBuilder<AppBloc, AppState>(
-						builder: (context, state) {
-							return Text(_getAppbarTitle(state.selectedItem));
-						},
-					),
-					centerTitle: true,
-					backgroundColor: Colors.indigo,
-				),
-				body: AnimatedSwitcher(
-					switchInCurve: Curves.easeInExpo,
-					switchOutCurve: Curves.easeOutExpo,
-					duration: const Duration(milliseconds: 500),
-					child: _content,
-				),
-				floatingActionButton: FloatingActionButton(
-					onPressed: _speechEnabled ? _speechToText.isNotListening ? _startListening : _stopListening : null,
-					child: _speechToText.isListening ? Icon(Icons.mic_off) : Icon(Icons.mic),
-					backgroundColor: Colors.indigo,
-					tooltip: "Please hold the Mic button to speak and initiate the voice command.",
-				)
+			child: BlocBuilder<AppBloc, AppState>(
+				builder: (context, state) {
+
+					return Scaffold(
+						drawer: NavDrawerWidget(),
+						appBar: AppBar(
+							title: Text(_getAppbarTitle(state.selectedItem)),
+							centerTitle: true,
+							backgroundColor: Colors.indigo,
+						),
+						body: AnimatedSwitcher(
+							switchInCurve: Curves.easeInExpo,
+							switchOutCurve: Curves.easeOutExpo,
+							duration: const Duration(milliseconds: 500),
+							child: _content,
+						),
+						floatingActionButton: state.selectedItem != NavItem.homePage ? null : FloatingActionButton(
+							onPressed: () async {
+								if(await Permission.microphone.isDenied) {
+									await Permission.microphone.request();
+									return;
+								}
+								
+								if(!_speechEnabled) {
+									await _initSpeech();
+								}
+
+								_speechToText.isNotListening ? _startListening() : _stopListening();
+							},
+							child: _speechToText.isListening ? Icon(Icons.mic_off) : Icon(Icons.mic),
+							backgroundColor: Colors.indigo,
+							tooltip: "Please hold the Mic button to speak and initiate the voice command.",
+						)
+					);
+				},		
 			)
 		)
 	);
