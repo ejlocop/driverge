@@ -25,6 +25,7 @@ class MessagesPageState extends State<MessagesPage> {
 	void initState() {
 		super.initState();
 		selectedMessageId = BlocProvider.of<AppBloc>(context).state.selectedMessageId;
+    print("selectedMessageId ${selectedMessageId} ${BlocProvider.of<AppBloc>(context).state.messagesFetched}");
 	}
 
 	@override

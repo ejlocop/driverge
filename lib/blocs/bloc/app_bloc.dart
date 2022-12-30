@@ -56,6 +56,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
 	}
 
   void onMessageSelected(MessageSelected event, Emitter<AppState> emit) {
+    print("onMessageSelected ${event.selectedMessageId}");
     emit(state.copyWith(selectedMessageId: event.selectedMessageId));
   }
 }

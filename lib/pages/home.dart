@@ -62,8 +62,11 @@ class HomePageState extends State<HomePage> {
 							);
 						}
 						final _messages = snapshot.data ?? <Message>[];
-						BlocProvider.of<AppBloc>(context).add(MessagesLoaded(_messages, _messages.isNotEmpty));
-						BlocProvider.of<AppBloc>(context).add(MessageSelected(_messages.first?.id));
+						
+            if(!state.messagesFetched) {
+						  BlocProvider.of<AppBloc>(context).add(MessageSelected(_messages.first?.id));
+              BlocProvider.of<AppBloc>(context).add(MessagesLoaded(_messages, _messages.isNotEmpty));
+            }
 
 						return Column(
 							mainAxisSize: MainAxisSize.min,
