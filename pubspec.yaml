@@ -46,6 +46,7 @@ dependencies:
   speech_to_text: ^6.1.1
   fluttertoast: ^8.1.2
   http: ^0.13.5
+  flutter_sms: ^2.3.3
 
 dev_dependencies:
   flutter_test:

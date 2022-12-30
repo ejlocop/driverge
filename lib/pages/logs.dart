@@ -60,7 +60,8 @@ class LogsPageState extends State<LogsPage> {
 			itemCount: snapshot.data!.length,
 			itemBuilder: (context, index) {
 				Log log = snapshot.data![index];
-				var date = DateFormat("MMM dd, HH:mm a").format(DateTime.parse(log.date ?? ''));
+				var date = DateFormat("MMM dd, hh:mm a").format(DateTime.parse(log.date!));
+        // print(log);
 				return ListTile(
 					title: Text(log.message, 
 						style: const TextStyle(

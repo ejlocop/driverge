@@ -150,7 +150,7 @@ class MessagesPageState extends State<MessagesPage> {
 								child: Padding(
 									padding: const EdgeInsets.all(10),
 									child: Icon(
-										isSelected ? Icons.check_box_outline_blank : Icons.check_box, 
+										!isSelected ? Icons.radio_button_checked_sharp : Icons.radio_button_off_sharp, 
 										color: isSelected ? Colors.grey.shade300 : Colors.indigo
 									),
 								),

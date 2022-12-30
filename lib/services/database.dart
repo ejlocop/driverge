@@ -116,6 +116,7 @@ class DatabaseService {
 	Future<List<Log>> logs() async {
 		final db = await _databaseService.database;
 		final List<Map<String, dynamic>> logs = await db.query('logs');
+    print(logs);
 		return List.generate(logs.length, (index) => Log.fromMap(logs[index])).reversed.toList();
 	}
 

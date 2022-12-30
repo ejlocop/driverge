@@ -1,10 +1,8 @@
 package com.ejlocop.driverge
 
-import android.app.role.RoleManager
 import android.content.Intent
 import android.os.Bundle
 import android.telecom.TelecomManager
-import android.telephony.TelephonyManager
 import android.util.Log
 import androidx.annotation.NonNull
 import com.ejlocop.driverge.commons.events.*
@@ -15,17 +13,12 @@ import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 import org.greenrobot.eventbus.EventBus
-import org.greenrobot.eventbus.Subscribe
-import org.greenrobot.eventbus.ThreadMode
-import pub.devrel.easypermissions.AppSettingsDialog
 import java.lang.ref.WeakReference
 import android.content.Context
-import android.content.pm.PackageManager
-import android.net.Uri
-import android.os.Build
 import android.provider.Telephony
-import androidx.annotation.RequiresApi
 import com.ejlocop.driverge.services.MySMSReceiver
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 
 /** MainActivity */
 class MainActivity: FlutterActivity() {
@@ -121,12 +114,16 @@ class MainActivity: FlutterActivity() {
 
     override fun onStart() {
         super.onStart()
-        EventBus.getDefault().register(this)
+        if (!EventBus.getDefault().isRegistered(this)) {
+            EventBus.getDefault().register(this);
+        }
     }
 
     override fun onStop() {
         super.onStop()
-        EventBus.getDefault().unregister(this)
+        if (EventBus.getDefault().isRegistered(this)) {
+            EventBus.getDefault().unregister(this);
+        }
     }
 
     override fun onResume() {
@@ -157,7 +154,7 @@ class MainActivity: FlutterActivity() {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onMessageEvent(event: MessageEvent) {
+    public fun onMessageEvent(event: MessageEvent) {
         Log.d("Blocker", "onMessageEvent: ${event.message}")
         var args: HashMap<String, String?> = HashMap()
         var channel = MethodChannel(_flutterEngine.dartExecutor.binaryMessenger, CHANNEL_NAME)

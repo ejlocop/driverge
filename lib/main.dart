@@ -16,9 +16,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
-import 'package:telephony/telephony.dart';
 import 'package:speech_to_text/speech_to_text.dart';
-import 'package:http/http.dart' as http;
+import 'package:flutter_sms/flutter_sms.dart';
 
 void main() {
 	WidgetsFlutterBinding.ensureInitialized();
@@ -53,13 +52,11 @@ class MyHomePageState extends State<MyHomePage> {
 	late AppBloc _bloc;
 	late Widget _content;
 	final methodChannel = MethodChannel('com.ejlocop.driverge/channel');
-	final telephony = Telephony.instance;
 	final DatabaseService databaseService = DatabaseService();
 	SpeechToText _speechToText = SpeechToText();
 	String _lastWords = '';
 	bool _speechEnabled = false;
 	late Commands _commands;
-	int _counter = 0;
 
 	@override
 	void initState() {
@@ -141,9 +138,26 @@ class MyHomePageState extends State<MyHomePage> {
 	Future _onBarredContact(String source, String phoneNumber) async {
 		Message message = _bloc.state.messages.firstWhere((message) => message.id == _bloc.state.selectedMessageId);
 
-		await telephony.sendSms(to: phoneNumber, message: message.text);
-		await LogService.logBarring(source, phoneNumber);
-		await LogService.logFeedback(phoneNumber, message);
+		try {
+      final _result = await sendSMS(message: message.text, recipients: [phoneNumber], sendDirect: true);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text("Sending message result: $_result"),
+        duration: Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+        shape: StadiumBorder(),
+        margin: EdgeInsets.all(20),
+      ));
+      await LogService.logBarring(source, phoneNumber);
+      await LogService.logFeedback(phoneNumber, message);
+    } on Exception catch(e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text("Failed sending a message ${e.toString()}"),
+        duration: Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+        shape: StadiumBorder(),
+        margin: EdgeInsets.all(20),
+      ));
+    }
 	}
 
 	@override
@@ -189,7 +203,7 @@ class MyHomePageState extends State<MyHomePage> {
 
 								_speechToText.isNotListening ? _startListening() : _stopListening();
 							},
-							child: _speechToText.isListening ? Icon(Icons.mic_off) : Icon(Icons.mic),
+							child: !_speechToText.isListening ? Icon(Icons.mic_off) : Icon(Icons.mic),
 							backgroundColor: Colors.indigo,
 							tooltip: "Please hold the Mic button to speak and initiate the voice command.",
 						)

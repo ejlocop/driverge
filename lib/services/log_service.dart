@@ -8,14 +8,16 @@ class LogService {
 	static Future<void> logContact(Contact contact, LogContactType logType) async {
 		await DatabaseService().insertLog(Log(
 			type: 'contact',
-			message: '${_getLogContactTypeVerb(logType)} $contact'
+			message: '${_getLogContactTypeVerb(logType)} $contact',
+      date: DateTime.now().toString(),
 		));
 	}
 
 	static Future<void> logMessage(Message message, LogMessageType logType) async {
 		await DatabaseService().insertLog(Log(
 			type: 'message',
-			message: '${_getLogMessageTypeVerb(logType)} $message'
+			message: '${_getLogMessageTypeVerb(logType)} $message',
+      date: DateTime.now().toString(),
 		));
 	}
 
@@ -23,7 +25,8 @@ class LogService {
 		final verb = isBlocking ? 'Enabled' : 'Disabled';
 		await DatabaseService().insertLog(Log(
 			type: 'blocking',
-			message: '$verb blocking'
+			message: '$verb blocking',
+      date: DateTime.now().toString(),
 		));
 	}
 
@@ -31,7 +34,8 @@ class LogService {
 		final String message = "Blocked incoming $source from $phoneNumber";
 		await DatabaseService().insertLog(Log(
 			type: 'blocking',
-			message: message
+			message: message,
+      date: DateTime.now().toString(),
 		));
 	}
 
@@ -39,7 +43,8 @@ class LogService {
 		final String _message = "Sent \"${message.text}\" feedback to $phoneNumber";
 		await DatabaseService().insertLog(Log(
 			type: 'feedback',
-			message: _message
+			message: _message,
+      date: DateTime.now().toString(),
 		));
 	}
 
