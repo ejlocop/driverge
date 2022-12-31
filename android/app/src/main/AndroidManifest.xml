@@ -1,0 +1,137 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+	package="com.ejlocop.driverge">
+
+	<uses-feature android:name="android.hardware.telephony" android:required="true" />
+	<uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
+
+	<uses-permission android:name="android.permission.READ_PHONE_STATE" />
+	<uses-permission android:name="android.permission.CALL_PHONE" />
+
+	<uses-permission android:name="android.permission.SEND_SMS" />
+	<uses-permission android:name="android.permission.RECEIVE_SMS" />
+	<uses-permission android:name="android.permission.READ_SMS" />
+	<uses-permission android:name="android.permission.RECEIVE_MMS" />
+	
+	<uses-permission android:name="android.permission.RECORD_AUDIO"/>
+	<uses-permission android:name="android.permission.INTERNET"/>
+
+	<queries>
+		<intent>
+			<action android:name="android.speech.RecognitionService" />
+		</intent>
+
+		<intent>
+			<action android:name="android.intent.action.SENDTO"/>
+			<data android:scheme="smsto" android:host="*" />
+		</intent>
+	</queries>
+
+	<application
+		android:label="Driverge"
+		android:name="${applicationName}"
+		android:icon="@mipmap/launcher_icon">
+		<activity
+			android:name=".MainActivity"
+			android:exported="true"
+			android:launchMode="singleTop"
+			android:theme="@style/Theme.AppCompat"
+			android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+			android:hardwareAccelerated="true"
+			android:windowSoftInputMode="adjustResize">
+			<!-- Specifies an Android theme to apply to this Activity as soon as
+				 the Android process has started. This theme is visible to the user
+				 while the Flutter UI initializes. After that, this theme continues
+				 to determine the Window background behind the Flutter UI. -->
+			<meta-data
+			  android:name="io.flutter.embedding.android.NormalTheme"
+			  android:resource="@style/NormalTheme"
+			  />
+			<intent-filter>
+				<action android:name="android.intent.action.MAIN"/>
+				<category android:name="android.intent.category.LAUNCHER"/>
+			</intent-filter>
+
+			<intent-filter>
+				<action android:name="android.intent.action.VIEW" />
+				<action android:name="android.intent.action.DIAL" />
+
+				<category android:name="android.intent.category.DEFAULT" />
+				<category android:name="android.intent.category.LAUNCHER" />
+				<category android:name="android.intent.category.BROWSABLE" />
+
+				<data android:scheme="tel" />
+			</intent-filter>
+
+			<intent-filter>
+				<action android:name="android.intent.action.DIAL" />
+				<category android:name="android.intent.category.LAUNCHER" />
+				<category android:name="android.intent.category.DEFAULT" />
+			</intent-filter>
+
+			<intent-filter>
+				<action android:name="android.intent.action.SEND" />
+				<action android:name="android.intent.action.SENDTO" />
+
+				<category android:name="android.intent.category.DEFAULT" />
+				<category android:name="android.intent.category.BROWSABLE" />
+
+				<data android:scheme="sms" />
+				<data android:scheme="smsto" />
+				<data android:scheme="mms" />
+				<data android:scheme="mmsto" />
+			</intent-filter>
+			
+		</activity>
+		<!-- Don't delete the meta-data below.
+			 This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
+		<meta-data
+			android:name="flutterEmbedding"
+			android:value="2" />
+		
+		<service
+			android:name=".services.MyCallScreeningService"
+			android:permission="android.permission.BIND_SCREENING_SERVICE"
+			android:exported="true">
+			<intent-filter>
+				<action android:name="android.telecom.CallScreeningService" />
+			</intent-filter>
+		</service>
+
+		<service
+			android:name=".services.MessagingService"
+			android:exported="true"
+			android:permission="android.permission.SEND_RESPOND_VIA_MESSAGE">
+			<intent-filter>
+				<action android:name="android.intent.action.RESPOND_VIA_MESSAGE" />
+				<category android:name="android.intent.category.DEFAULT" />
+
+				<data android:scheme="sms" />
+				<data android:scheme="smsto" />
+				<data android:scheme="mms" />
+				<data android:scheme="mmsto" />
+			</intent-filter>
+		</service>
+
+		<receiver
+			android:name=".services.MySMSReceiver"
+			android:exported="true"
+			android:permission="android.permission.BROADCAST_SMS">
+			<intent-filter android:priority="999">
+				<action android:name="android.provider.Telephony.SMS_RECEIVED" />
+				<action android:name="android.provider.Telephony.SMS_DELIVER" />
+			</intent-filter>
+		</receiver>
+
+		<receiver
+			android:name=".services.MmsService"
+			android:exported="true"
+			android:permission="android.permission.BROADCAST_WAP_PUSH">
+			<intent-filter>
+				<action android:name="android.provider.Telephony.WAP_PUSH_DELIVER" />
+				<data android:mimeType="application/vnd.wap.mms-message" />
+			</intent-filter>
+		</receiver>
+
+
+	</application>
+</manifest>

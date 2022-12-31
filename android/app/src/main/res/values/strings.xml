@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Driverge</string>
+
+    <string name="logs">Logs:</string>
+
+    <string name="global_enable_contact_phone_state_permissions">Please enable SMS and Calls permission.</string>
+    <string name="global_message_title">Driverge</string>
+    <string name="global_call_screening_required_message">You have to select Driverge app in the following dialog in order for app to work.</string>
+
+
+</resources>
