@@ -15,6 +15,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:flutter_sms/flutter_sms.dart';
@@ -74,95 +75,108 @@ class MyHomePageState extends State<MyHomePage> {
 		});
 		_commands = Commands(bloc: _bloc);
 		_initSpeech();
-
-		// fetchCounter();
 	}
 
 	Future _initSpeech() async {
 		if(await Permission.microphone.isDenied) {
 			return;
 		}
-		_speechEnabled = await _speechToText.initialize();
+		_speechEnabled = await _speechToText.initialize(
+			onError: _errorListener,
+			onStatus: _statusListener,
+		);
+		debugPrint("speecavailable $_speechEnabled");
 		setState(() {});
 	}
-
-	// Future fetchCounter() async {
-	// 	final response = await http.get(Uri.parse('https://api.countapi.xyz/hit/ejlocop.com/4b7579fd-6cb0-47b6-9391-bea71c555d1f'));
-	// 	if(response.statusCode == 200) {
-	// 		setState(() {
-	// 			_counter = json.decode(response.body)['value'] as int;
-	// 		});
-	// 	}
-	// }
 
 	/// Each time to start a speech recognition session
-	void _startListening() async {
-		await _speechToText.listen(
-			onResult: _onSpeechResult,
-			listenFor: const Duration(minutes: 1),
-		);
-		setState(() {});
+	Future _startListening() async {
+		debugPrint("=================================================");
+    await _stopListening();
+    await Future.delayed(const Duration(milliseconds: 50));
+    await _speechToText.listen(
+        onResult: _onSpeechResult,
+        cancelOnError: false,
+        partialResults: true,
+        listenMode: ListenMode.dictation,
+        listenFor: const Duration(days: 1));
+    setState(() {
+      _speechEnabled = true;
+    });
 	}
 
-	void _stopListening() async {
-		String? message;
-		await _speechToText.stop();
-		try {
-			_commands.handle(_lastWords);
-			message = _lastWords;
-		} on UnknownCommandException catch(e) {
-			debugPrint(e.toString());
-			message = e.message as String;
+	void _errorListener(SpeechRecognitionError error) {
+		debugPrint(error.errorMsg.toString());
+	}
+	
+	void _statusListener(String status) async {
+		debugPrint("status $status");
+		if (status == "done" && _speechEnabled) {
+			setState(() {
+				_speechEnabled = false;
+			});
+			await _startListening();
 		}
-		
-		ScaffoldMessenger.of(context)
-			.showSnackBar(SnackBar(
-				content: Text(message),
-				duration: Duration(seconds: 2),
-				behavior: SnackBarBehavior.floating,
-				shape: StadiumBorder(),
-				margin: EdgeInsets.all(20),
-			));
-		setState(() {});
+	}
+
+	Future _stopListening() async {
+		setState(() {
+      _speechEnabled = false;
+    });
+		await _speechToText.stop();
 	}
 
 	void _onSpeechResult(SpeechRecognitionResult result) {
 		setState(() {
-			if(result.finalResult) {
-				_stopListening();
-			}
 			_lastWords = result.recognizedWords;
 		});
+
+		print(_lastWords);
+		_handleCommand();
+	}
+
+	void _handleCommand() {
+		if(_lastWords.isEmpty) {
+			return;
+		}
+
+    try {
+      _commands.handle(_lastWords);
+    } on UnknownCommandException catch (e) {
+      debugPrint(e.toString());
+    }
 	}
 
 	Future _onBarredContact(String source, String phoneNumber) async {
 		Message message = _bloc.state.messages.firstWhere((message) => message.id == _bloc.state.selectedMessageId);
 
 		try {
-      final _result = await sendSMS(message: message.text, recipients: [phoneNumber], sendDirect: true);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text("Sending message result: $_result"),
-        duration: Duration(seconds: 2),
-        behavior: SnackBarBehavior.floating,
-        shape: StadiumBorder(),
-        margin: EdgeInsets.all(20),
-      ));
-      await LogService.logBarring(source, phoneNumber);
-      await LogService.logFeedback(phoneNumber, message);
-    } on Exception catch(e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text("Failed sending a message ${e.toString()}"),
-        duration: Duration(seconds: 2),
-        behavior: SnackBarBehavior.floating,
-        shape: StadiumBorder(),
-        margin: EdgeInsets.all(20),
-      ));
-    }
+			final _result = await sendSMS(message: message.text, recipients: [phoneNumber], sendDirect: true);
+			ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+				content: Text("Sending message result: $_result"),
+				duration: Duration(seconds: 2),
+				behavior: SnackBarBehavior.floating,
+				shape: StadiumBorder(),
+				margin: EdgeInsets.all(20),
+			));
+			await LogService.logBarring(source, phoneNumber);
+			await LogService.logFeedback(phoneNumber, message);
+		} on Exception catch(e) {
+			ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+				content: Text("Failed sending a message ${e.toString()}"),
+				duration: Duration(seconds: 2),
+				behavior: SnackBarBehavior.floating,
+				shape: StadiumBorder(),
+				margin: EdgeInsets.all(20),
+			));
+		}
 	}
 
 	@override
 	void dispose() {
 		super.dispose();
+
+		_speechToText.stop();
 	}
 
 	@override
